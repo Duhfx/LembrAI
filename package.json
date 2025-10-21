@@ -1,0 +1,50 @@
+{
+  "name": "lembrai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "nodemon --watch src --exec ts-node src/main.ts",
+    "start:prod": "node dist/main.js",
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:test": "ts-node src/test-database.ts",
+    "test:whatsapp": "ts-node src/test-whatsapp.ts",
+    "test:parser": "ts-node src/test-date-parser.ts",
+    "test:admin": "ts-node src/test-admin.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "LembrAI - Chatbot inteligente de lembretes via WhatsApp",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
+    "@nestjs/common": "^11.1.7",
+    "@nestjs/core": "^11.1.7",
+    "@nestjs/platform-express": "^11.1.7",
+    "@nestjs/serve-static": "^5.0.4",
+    "@prisma/client": "^6.17.1",
+    "chrono-node": "^2.9.0",
+    "dotenv": "^17.2.3",
+    "node-cron": "^4.2.1",
+    "openai": "^6.6.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "twilio": "^5.10.3"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.9.1",
+    "@types/node-cron": "^3.0.11",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.17.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

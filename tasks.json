@@ -1,0 +1,624 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Configurar estrutura base do projeto EventMemo.AI",
+        "description": "Configurar projeto Node.js com TypeScript, framework backend (NestJS ou Fastify) e estrutura de pastas básica",
+        "details": "Instalar dependências básicas: NestJS/CLI ou Fastify, TypeScript, tipos do Node. Configurar tsconfig.json otimizado, estrutura src/ com pastas: controllers/, services/, models/, utils/, config/. Configurar scripts npm para dev, build, start. Implementar configuração de ambiente (.env) para variáveis como DATABASE_URL, WHATSAPP_TOKEN, etc.",
+        "testStrategy": "Verificar se o projeto compila sem erros com 'npm run build' e inicia corretamente com 'npm run dev'",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Inicializar projeto Node.js e instalar dependências básicas",
+            "description": "Criar novo projeto Node.js e instalar todas as dependências fundamentais incluindo framework backend, TypeScript e ferramentas de desenvolvimento",
+            "dependencies": [],
+            "details": "Executar 'npm init -y' para criar package.json. Decidir entre NestJS e Fastify baseado em requisitos de performance vs facilidade de uso. Instalar dependências: @nestjs/cli ou fastify, typescript, @types/node, ts-node, nodemon. Instalar dependências de desenvolvimento: eslint, prettier, jest para testes futuros.",
+            "status": "pending",
+            "testStrategy": "Verificar se todas as dependências foram instaladas corretamente executando 'npm list' e confirmando que não há vulnerabilidades com 'npm audit'"
+          },
+          {
+            "id": 2,
+            "title": "Configurar TypeScript e arquivo tsconfig.json",
+            "description": "Estabelecer configuração completa do TypeScript com tsconfig.json otimizado para desenvolvimento backend e produção",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar tsconfig.json com target ES2020, module commonjs, strict mode habilitado, resolução de paths absolutos com '@/*' mapping para src/, outDir para dist/, incluir sourceMaps para debugging. Configurar paths para imports limpos e decorators experimentais se usando NestJS.",
+            "status": "pending",
+            "testStrategy": "Criar arquivo TypeScript de teste simples e verificar compilação com 'npx tsc --noEmit' sem erros"
+          },
+          {
+            "id": 3,
+            "title": "Criar estrutura de pastas e organização do código",
+            "description": "Estabelecer arquitetura de pastas padrão seguindo boas práticas para projetos backend escaláveis",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar estrutura src/ com subpastas: controllers/ (endpoints da API), services/ (lógica de negócio), models/ (entidades e DTOs), utils/ (funções auxiliares), config/ (configurações da aplicação). Adicionar index.ts files em cada pasta. Criar pasta tests/ na raiz. Configurar barrel exports para imports limpos.",
+            "status": "pending",
+            "testStrategy": "Verificar se a estrutura de pastas foi criada corretamente e que os imports entre pastas funcionam sem problemas"
+          },
+          {
+            "id": 4,
+            "title": "Configurar scripts npm e variáveis de ambiente",
+            "description": "Implementar scripts de desenvolvimento, build e produção junto com sistema de configuração de environment variables",
+            "dependencies": [
+              3
+            ],
+            "details": "Adicionar scripts no package.json: 'dev' (nodemon + ts-node), 'build' (compilação TypeScript), 'start' (execução produção), 'test' (jest). Criar arquivo .env.example com variáveis: DATABASE_URL, WHATSAPP_TOKEN, JWT_SECRET, NODE_ENV. Instalar e configurar dotenv. Criar config/environment.ts para validação de variáveis obrigatórias.",
+            "status": "pending",
+            "testStrategy": "Testar todos os scripts npm funcionam corretamente: 'npm run build' compila sem erros e 'npm run dev' inicia servidor de desenvolvimento"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Configurar banco de dados Supabase/PostgreSQL",
+        "description": "Configurar conexão com Supabase e criar schema para usuários, lembretes e notificações",
+        "details": "Criar conta Supabase, configurar projeto e obter connection string. Criar tabelas: users (id, phone, created_at, plan_type), reminders (id, user_id, message, original_datetime, reminder_datetime, status, created_at), notifications (id, reminder_id, type, sent_at, status). Configurar Prisma ORM ou similar para gerenciar schema e migrations. Implementar seed básico para testes.",
+        "testStrategy": "Testar conexão com banco, executar migrations e verificar criação de tabelas. Testar CRUD básico em cada tabela",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configurar conta Supabase e obter connection string",
+            "description": "Criar conta no Supabase, configurar novo projeto e obter a string de conexão necessária para conectar a aplicação ao banco de dados PostgreSQL",
+            "dependencies": [],
+            "details": "Criar conta gratuita no Supabase, criar novo projeto com nome 'EventMemo-AI', configurar senha do banco, copiar connection string da dashboard, configurar variáveis de ambiente DATABASE_URL no arquivo .env, verificar conectividade básica",
+            "status": "pending",
+            "testStrategy": "Testar conexão básica com o banco usando a connection string obtida"
+          },
+          {
+            "id": 2,
+            "title": "Criar schema de banco de dados com tabelas necessárias",
+            "description": "Projetar e criar o schema completo do banco com as tabelas users, reminders e notifications seguindo as especificações do projeto",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar tabela users (id UUID primary key, phone VARCHAR unique, created_at TIMESTAMP, plan_type VARCHAR), tabela reminders (id UUID primary key, user_id UUID foreign key, message TEXT, original_datetime TIMESTAMP, reminder_datetime TIMESTAMP, status VARCHAR, created_at TIMESTAMP), tabela notifications (id UUID primary key, reminder_id UUID foreign key, type VARCHAR, sent_at TIMESTAMP, status VARCHAR)",
+            "status": "pending",
+            "testStrategy": "Verificar criação de todas as tabelas e relacionamentos através de queries SQL diretas"
+          },
+          {
+            "id": 3,
+            "title": "Configurar Prisma ORM e sistema de migrations",
+            "description": "Instalar e configurar Prisma ORM para gerenciar o schema do banco e implementar sistema de migrations para versionamento",
+            "dependencies": [
+              2
+            ],
+            "details": "Instalar @prisma/client e prisma CLI, executar 'prisma init', configurar schema.prisma com as tabelas criadas, gerar cliente Prisma, configurar migrations com 'prisma migrate dev', criar migration inicial, configurar scripts npm para migrations em produção",
+            "status": "pending",
+            "testStrategy": "Executar migrations e verificar se o schema Prisma está sincronizado com o banco"
+          },
+          {
+            "id": 4,
+            "title": "Implementar seeds básicos para ambiente de desenvolvimento",
+            "description": "Criar dados de seed para popular o banco com informações de teste durante o desenvolvimento",
+            "dependencies": [
+              3
+            ],
+            "details": "Criar arquivo seed.ts na pasta prisma/, implementar função para inserir usuários de teste, lembretes de exemplo com diferentes status, notificações de teste, configurar script 'npm run seed' no package.json, implementar limpeza de dados antes do seed",
+            "status": "pending",
+            "testStrategy": "Executar seed e verificar se os dados de teste foram inseridos corretamente em todas as tabelas"
+          },
+          {
+            "id": 5,
+            "title": "Implementar testes de conexão e operações CRUD básicas",
+            "description": "Criar testes para validar a conexão com o banco e implementar operações básicas de Create, Read, Update e Delete para todas as entidades",
+            "dependencies": [
+              4
+            ],
+            "details": "Criar service classes para User, Reminder e Notification com métodos CRUD, implementar testes unitários para cada operação, testar relacionamentos entre tabelas, validar constraints e foreign keys, criar testes de performance básicos para queries",
+            "status": "pending",
+            "testStrategy": "Executar suite completa de testes CRUD e verificar performance das operações básicas no banco"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Integrar API do WhatsApp (Twilio)",
+        "description": "Configurar webhook para receber mensagens e implementar envio de mensagens via WhatsApp",
+        "details": "Configurar webhook endpoint (/webhook/whatsapp) para receber mensagens. Implementar service para envio de mensagens com retry automático. Configurar validação de webhook e tratamento de diferentes tipos de mensagem. Implementar rate limiting para evitar spam.",
+        "testStrategy": "Testar recebimento de mensagens via webhook, envio de mensagens de resposta e validação de assinatura do webhook",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 2,
+            "title": "Configurar conta e credenciais da API WhatsApp escolhida",
+            "description": "Realizar setup inicial da API escolhida, obter tokens de acesso e configurar número de telefone para testes",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar conta na plataforma escolhida, completar processo de verificação, configurar número de telefone de teste, obter tokens de API (sandbox e produção), configurar variáveis de ambiente (.env) com WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, etc. Instalar SDK oficial da plataforma escolhida.",
+            "status": "pending",
+            "testStrategy": "Testar autenticação com API e envio de mensagem simples para número de teste"
+          },
+          {
+            "id": 3,
+            "title": "Implementar webhook endpoint para receber mensagens do WhatsApp",
+            "description": "Criar endpoint /webhook/whatsapp para receber mensagens e eventos do WhatsApp com validação de assinatura",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar controller WhatsAppWebhookController com endpoints GET (verificação) e POST (recebimento). Implementar validação de assinatura webhook usando crypto para verificar autenticidade. Parsear payload JSON e extrair dados da mensagem (remetente, texto, timestamp). Implementar logging estruturado para debug. Configurar URL pública usando ngrok para desenvolvimento.",
+            "status": "pending",
+            "testStrategy": "Configurar webhook na plataforma e verificar recebimento correto de mensagens de teste"
+          },
+          {
+            "id": 4,
+            "title": "Desenvolver service para envio de mensagens WhatsApp",
+            "description": "Criar WhatsAppService com métodos para envio de mensagens texto, templates e tratamento de diferentes tipos de conteúdo",
+            "dependencies": [
+              2
+            ],
+            "details": "Implementar classe WhatsAppService com métodos: sendTextMessage(to, message), sendTemplate(to, templateName, params), sendMedia(to, mediaUrl, caption). Configurar interface TypeScript para tipagem de responses. Implementar tratamento de erros específicos da API (número inválido, usuário bloqueado, etc). Adicionar logs detalhados para auditoria de envios.",
+            "status": "pending",
+            "testStrategy": "Testar envio de mensagens para números válidos e inválidos, verificar handling de erros"
+          },
+          {
+            "id": 5,
+            "title": "Implementar validação de segurança e autenticação do webhook",
+            "description": "Configurar middleware de segurança para validar origem das requisições webhook e implementar autenticação robusta",
+            "dependencies": [
+              3
+            ],
+            "details": "Criar middleware de validação que verifica header X-Hub-Signature-256 usando HMAC SHA256. Implementar verificação de token de verificação do webhook. Adicionar rate limiting específico para endpoint webhook. Configurar whitelist de IPs se disponível na plataforma. Implementar logs de segurança para tentativas de acesso não autorizadas.",
+            "status": "pending",
+            "testStrategy": "Testar webhook com assinaturas válidas e inválidas, verificar bloqueio de requisições maliciosas"
+          },
+          {
+            "id": 6,
+            "title": "Configurar rate limiting e sistema de retry automático",
+            "description": "Implementar controle de taxa de envio de mensagens e sistema de retry para falhas temporárias da API",
+            "dependencies": [
+              4
+            ],
+            "details": "Configurar rate limiting usando express-rate-limit ou similar para evitar spam (máximo 10 mensagens/minuto por usuário). Implementar sistema de retry com backoff exponencial para falhas temporárias (HTTP 429, 500, timeout). Criar fila de mensagens usando Bull/BullMQ para processar envios de forma assíncrona. Configurar dead letter queue para mensagens que falharam múltiplas vezes.",
+            "status": "pending",
+            "testStrategy": "Testar comportamento com múltiplas mensagens simultâneas e simular falhas da API para verificar retry"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implementar parser de linguagem natural para datas/horários",
+        "description": "Integrar Claude API para interpretar textos como 'terça às 17h'",
+        "details": "Instalar e configurar chrono-node para parsing básico de datas em português. Como fallback, configurar integração com O Claude API  para casos complexos. Criar service ParseDateTimeService com métodos: parseDateTime(text), validateDateTime(parsed), formatConfirmation(datetime). Implementar testes com casos como 'amanhã 15h', 'sexta que vem às 9h', 'em 2 horas'.",
+        "testStrategy": "Criar suite de testes com 20+ exemplos de expressões de data/hora em português e verificar parsing correto",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configurar e testar biblioteca chrono-node para português",
+            "description": "Instalar chrono-node e configurar para parsing básico de datas em português brasileiro",
+            "dependencies": [],
+            "details": "Instalar chrono-node via npm. Configurar localização para português brasileiro. Implementar testes básicos com expressões como 'amanhã', 'hoje às 15h', 'próxima terça'. Validar se a biblioteca consegue interpretar corretamente expressões temporais em português. Documentar limitações encontradas para casos que precisarão do fallback da API.",
+            "status": "pending",
+            "testStrategy": "Criar testes unitários com 10+ expressões básicas em português e verificar parsing correto"
+          },
+          {
+            "id": 2,
+            "title": "Implementar integração com OpenAI GPT-4o-mini como fallback",
+            "description": "Configurar API da OpenAI para interpretar expressões complexas de data/hora que chrono-node não conseguir processar",
+            "dependencies": [
+              1
+            ],
+            "details": "Configurar cliente OpenAI com GPT-4o-mini. Criar prompts estruturados para parsing de datas em português. Implementar lógica de fallback que aciona quando chrono-node falha. Configurar rate limiting e error handling para chamadas da API. Implementar cache para evitar chamadas duplicadas. Validar respostas da API e converter para formato padronizado.",
+            "status": "pending",
+            "testStrategy": "Testar com expressões complexas como 'sexta que vem às 9h da manhã' e 'daqui a 3 dias às 14:30'"
+          },
+          {
+            "id": 3,
+            "title": "Desenvolver ParseDateTimeService com métodos principais",
+            "description": "Criar service principal que coordena parsing usando chrono-node e fallback da OpenAI",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Criar classe ParseDateTimeService com métodos: parseDateTime(text) que tenta chrono-node primeiro e usa OpenAI como fallback, validateDateTime(parsed) para validar se data é futura e válida, formatConfirmation(datetime) para gerar mensagem de confirmação amigável. Implementar logs detalhados de qual método foi usado. Configurar timeouts e retry logic. Padronizar formato de saída para integração com sistema de agendamento.",
+            "status": "pending",
+            "testStrategy": "Testar fluxo completo com diferentes tipos de entrada e verificar logs de qual método foi usado"
+          },
+          {
+            "id": 4,
+            "title": "Criar suite abrangente de testes com casos complexos",
+            "description": "Implementar testes extensivos cobrindo cenários reais de uso em português brasileiro",
+            "dependencies": [
+              3
+            ],
+            "details": "Criar pelo menos 25 casos de teste cobrindo: horários específicos ('hoje às 15h'), dias da semana ('próxima terça às 9h'), expressões relativas ('em 2 horas', 'daqui a 3 dias'), casos edge ('meia-noite', 'meio-dia'). Implementar testes de integração verificando fluxo completo do parsing até formatação da confirmação. Incluir testes de performance para chamadas da API. Documentar casos conhecidamente problemáticos.",
+            "status": "pending",
+            "testStrategy": "Suite com 25+ casos de teste cobrindo expressões simples, complexas e casos edge em português"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Desenvolver lógica de conversação do chatbot",
+        "description": "Implementar fluxo conversacional para criação de lembretes via WhatsApp",
+        "details": "Criar ChatbotService com machine state para gerenciar contexto da conversa. Estados: INITIAL, WAITING_DATETIME, WAITING_ADVANCE_TIME, CONFIRMING. Implementar handlers para cada estado e transições. Lógica: receber mensagem -> extrair datetime -> perguntar antecedência -> confirmar -> salvar. Implementar fallbacks para mensagens não compreendidas e comandos de ajuda.",
+        "testStrategy": "Testar fluxo completo de criação de lembrete via simulação de mensagens WhatsApp, incluindo casos de erro e abandono",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design da máquina de estados conversacional",
+            "description": "Projetar a arquitetura da máquina de estados para o fluxo conversacional do chatbot",
+            "dependencies": [],
+            "details": "Definir os estados: INITIAL, WAITING_DATETIME, WAITING_ADVANCE_TIME, CONFIRMING. Mapear todas as transições possíveis entre estados, incluindo casos de erro e abandono. Criar diagrama de estados e documentar as regras de transição. Definir estrutura do contexto da conversa (userId, currentState, data, etc.).",
+            "status": "pending",
+            "testStrategy": "Validar o design através de casos de uso e cenários de teste"
+          },
+          {
+            "id": 2,
+            "title": "Implementação do ChatbotService base e gerenciamento de contexto",
+            "description": "Criar a classe base ChatbotService com gerenciamento de contexto de conversa",
+            "dependencies": [
+              1
+            ],
+            "details": "Implementar ChatbotService com métodos para gerenciar contexto: createContext(), getContext(userId), updateContext(userId, data), clearContext(userId). Criar estrutura de dados para armazenar estado da conversa em memória ou cache (Redis). Implementar timeout para limpeza automática de contextos inativos.",
+            "status": "pending",
+            "testStrategy": "Testar criação, recuperação e limpeza de contextos de usuários"
+          },
+          {
+            "id": 3,
+            "title": "Desenvolvimento dos handlers para cada estado específico",
+            "description": "Implementar handlers específicos para cada estado da máquina conversacional",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar handlers: handleInitialState() para receber solicitação inicial, handleWaitingDateTime() para processar data/hora informada, handleWaitingAdvanceTime() para capturar tempo de antecedência, handleConfirming() para confirmar dados do lembrete. Cada handler deve validar entrada e preparar resposta apropriada.",
+            "status": "pending",
+            "testStrategy": "Testar cada handler individualmente com diferentes tipos de entrada"
+          },
+          {
+            "id": 4,
+            "title": "Implementação das transições entre estados",
+            "description": "Desenvolver a lógica de transições entre estados da máquina conversacional",
+            "dependencies": [
+              3
+            ],
+            "details": "Implementar método processMessage(userId, message) que: 1) recupera contexto atual, 2) executa handler do estado atual, 3) determina próximo estado baseado na resposta, 4) atualiza contexto com novo estado, 5) retorna mensagem de resposta. Implementar validações para transições válidas e tratamento de estados inválidos.",
+            "status": "pending",
+            "testStrategy": "Testar fluxo completo de transições com simulação de mensagens sequenciais"
+          },
+          {
+            "id": 5,
+            "title": "Desenvolvimento de fallbacks e tratamento de erros",
+            "description": "Implementar tratamento de casos não previstos e mensagens de ajuda",
+            "dependencies": [
+              4
+            ],
+            "details": "Criar handlers para: mensagens não compreendidas em cada estado, comando /ajuda, comando /cancelar, timeout de conversa, erros de parsing. Implementar respostas contextualizadas baseado no estado atual. Criar sistema de tentativas limitadas antes de resetar conversa.",
+            "status": "pending",
+            "testStrategy": "Testar cenários de erro, comandos especiais e abandono de conversa"
+          },
+          {
+            "id": 6,
+            "title": "Testes do fluxo conversacional completo",
+            "description": "Implementar testes de integração para validar todo o fluxo conversacional",
+            "dependencies": [
+              5
+            ],
+            "details": "Criar testes que simulam conversas completas: desde solicitação inicial até confirmação final do lembrete. Testar cenários: fluxo feliz, diferentes formatos de data/hora, diferentes tempos de antecedência, abandono em cada estado, comandos de ajuda. Implementar mocks para WhatsApp API e ParseDateTimeService.",
+            "status": "pending",
+            "testStrategy": "Executar suite completa de testes de integração e validar cobertura de código"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Implementar sistema de agendamento de notificações",
+        "description": "Configurar BullMQ ou Agenda.js para agendar e executar envio de lembretes",
+        "details": "Instalar e configurar BullMQ com Redis ou Agenda.js com MongoDB/PostgreSQL. Criar ReminderSchedulerService com métodos: scheduleReminder(reminder), cancelReminder(reminderId), rescheduleReminder(reminderId, newDate). Implementar worker para processar jobs agendados e enviar notificações. Configurar retry policy para falhas no envio. Implementar cleanup de jobs antigos.",
+        "testStrategy": "Testar agendamento de lembretes para diferentes horários, cancelamento e reenvio em caso de falha",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Escolher e configurar biblioteca de agendamento (BullMQ vs Agenda.js)",
+            "description": "Analisar e selecionar entre BullMQ (com Redis) ou Agenda.js (com MongoDB/PostgreSQL) para o sistema de agendamento",
+            "dependencies": [],
+            "details": "Comparar performance, recursos e complexidade entre BullMQ e Agenda.js. Instalar dependências necessárias (Redis para BullMQ ou MongoDB/PostgreSQL para Agenda.js). Configurar conexão com banco de dados. Criar configuração base do sistema de filas com settings otimizados para produção.",
+            "status": "pending",
+            "testStrategy": "Testar conexão com banco de dados, criação de jobs básicos e verificar se o sistema está operacional"
+          },
+          {
+            "id": 2,
+            "title": "Implementar ReminderSchedulerService com métodos principais",
+            "description": "Criar serviço principal com métodos para agendar, cancelar e reagendar lembretes",
+            "dependencies": [
+              1
+            ],
+            "details": "Desenvolver ReminderSchedulerService com métodos scheduleReminder(reminder), cancelReminder(reminderId) e rescheduleReminder(reminderId, newDate). Implementar validação de dados de entrada. Configurar serialização/deserialização de dados do job. Adicionar logging para rastreamento de operações. Implementar tratamento de erros específicos para cada operação.",
+            "status": "pending",
+            "testStrategy": "Testar agendamento de lembretes para diferentes horários, cancelamento de jobs existentes e reagendamento com novas datas"
+          },
+          {
+            "id": 3,
+            "title": "Desenvolver worker para processar jobs agendados",
+            "description": "Implementar worker que processa jobs na fila e executa envio de notificações",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar worker que monitora fila de jobs agendados. Implementar lógica de processamento que recupera dados do lembrete e executa envio via WhatsApp API. Configurar concorrência adequada para processar múltiplos jobs. Implementar graceful shutdown para garantir finalização segura dos jobs em execução. Adicionar métricas de performance e monitoramento.",
+            "status": "pending",
+            "testStrategy": "Testar processamento de jobs únicos e múltiplos simultaneamente, verificar execução correta de envio de notificações"
+          },
+          {
+            "id": 4,
+            "title": "Configurar retry policy e tratamento de falhas",
+            "description": "Implementar política de retry automático e tratamento robusto de falhas no envio",
+            "dependencies": [
+              3
+            ],
+            "details": "Configurar retry policy com backoff exponencial para falhas de envio. Definir número máximo de tentativas (3-5 attempts). Implementar dead letter queue para jobs que falharam definitivamente. Configurar diferentes estratégias de retry baseadas no tipo de erro (temporário vs permanente). Adicionar alertas para falhas críticas e logs detalhados para debugging.",
+            "status": "pending",
+            "testStrategy": "Simular falhas de API e verificar retry automático, testar limite de tentativas e processamento de dead letter queue"
+          },
+          {
+            "id": 5,
+            "title": "Implementar cleanup e manutenção de jobs antigos",
+            "description": "Criar sistema de limpeza automática para remover jobs completados e dados antigos",
+            "dependencies": [
+              4
+            ],
+            "details": "Implementar job de cleanup que executa periodicamente (diário/semanal) para remover jobs completados há mais de 30 dias. Configurar limpeza de logs antigos para evitar crescimento excessivo do banco. Implementar compactação de dados históricos. Criar métricas de uso de storage e alertas para crescimento anormal. Adicionar endpoint para limpeza manual via admin interface.",
+            "status": "pending",
+            "testStrategy": "Testar execução automática de cleanup, verificar remoção correta de dados antigos sem afetar jobs ativos"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implementar sistema de notificações por email de backup",
+        "description": "Configurar Resend ou SendGrid para envio de emails quando WhatsApp falhar",
+        "details": "Configurar conta Resend ou SendGrid e obter API keys. Criar EmailService com template para lembretes. Implementar lógica de fallback: se envio WhatsApp falhar 3 vezes, enviar email. Criar templates HTML responsivos para emails de lembrete. Implementar opção para usuário cadastrar email opcional. Configurar unsubscribe e compliance LGPD.",
+        "testStrategy": "Testar envio de emails, template rendering e fluxo de fallback quando WhatsApp não funciona",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configurar provedor de email (Resend ou SendGrid)",
+            "description": "Configurar conta e obter credenciais do provedor de email escolhido para envio de notificações",
+            "dependencies": [],
+            "details": "Criar conta no Resend ou SendGrid, obter API keys, configurar domínio de envio e verificação. Adicionar variáveis de ambiente para credenciais. Testar conectividade básica com o provedor escolhido.",
+            "status": "pending",
+            "testStrategy": "Testar autenticação com API e envio de email básico"
+          },
+          {
+            "id": 2,
+            "title": "Desenvolver EmailService e templates HTML responsivos",
+            "description": "Criar serviço de email e templates HTML para envio de lembretes por email",
+            "dependencies": [
+              1
+            ],
+            "details": "Implementar EmailService com métodos sendReminderEmail, validateEmailTemplate. Criar templates HTML responsivos para diferentes tipos de lembrete. Implementar sistema de variáveis no template (nome, data, conteúdo do lembrete).",
+            "status": "pending",
+            "testStrategy": "Testar renderização de templates e envio de emails com diferentes conteúdos"
+          },
+          {
+            "id": 3,
+            "title": "Implementar lógica de fallback e sistema de tentativas",
+            "description": "Desenvolver sistema que tenta WhatsApp 3 vezes antes de usar email como backup",
+            "dependencies": [
+              2
+            ],
+            "details": "Implementar contador de tentativas para envio WhatsApp, configurar limite de 3 tentativas. Criar lógica de fallback que aciona email após falhas. Implementar delay entre tentativas e logging de cada tentativa.",
+            "status": "pending",
+            "testStrategy": "Simular falhas do WhatsApp e verificar acionamento do email após 3 tentativas"
+          },
+          {
+            "id": 4,
+            "title": "Configurar compliance LGPD e sistema de unsubscribe",
+            "description": "Implementar funcionalidades de conformidade com LGPD e opção de descadastro",
+            "dependencies": [
+              2
+            ],
+            "details": "Adicionar campo email_opt_in na tabela users. Implementar endpoint de unsubscribe com token único. Criar página de descadastro e política de privacidade. Implementar consentimento explícito para envio de emails. Configurar cleanup de dados após descadastro.",
+            "status": "pending",
+            "testStrategy": "Testar fluxo de opt-in, unsubscribe e conformidade com LGPD"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Desenvolver painel administrativo simples",
+        "description": "Criar interface web básica para visualizar lembretes ativos e estatísticas",
+        "details": "Implementar endpoints REST para listar lembretes: GET /admin/reminders com filtros por status, data, usuário. Criar página HTML simples com tabela de lembretes, contadores de status e busca básica. Implementar autenticação básica com senha fixa em variável de ambiente. Adicionar métricas: total usuários, lembretes por dia, taxa de entrega. Usar CSS framework leve como Bootstrap ou TailwindCSS.",
+        "testStrategy": "Testar carregamento da página admin, filtros de lembretes e autenticação",
+        "priority": "low",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Desenvolver endpoints REST para administração",
+            "description": "Implementar endpoints REST para listar lembretes com filtros por status, data e usuário",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar endpoint GET /admin/reminders com query parameters para filtros (status, date_start, date_end, user_id). Implementar paginação e ordenação. Adicionar endpoint GET /admin/stats para métricas básicas como total de usuários, lembretes por dia e taxa de entrega. Usar middleware para validação de parâmetros e tratamento de erros.",
+            "status": "pending",
+            "testStrategy": "Testar endpoints com diferentes combinações de filtros, validar paginação e verificar formato das respostas JSON"
+          },
+          {
+            "id": 2,
+            "title": "Criar interface HTML com tabelas e filtros",
+            "description": "Desenvolver página web simples com tabela de lembretes, contadores de status e funcionalidade de busca",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar página HTML usando Bootstrap ou TailwindCSS com tabela responsiva para exibir lembretes. Implementar formulário de filtros com campos para status, data e busca por usuário. Adicionar contadores de status (pendente, enviado, falhado) no topo da página. Usar JavaScript vanilla para interações básicas e chamadas AJAX para os endpoints.",
+            "status": "pending",
+            "testStrategy": "Testar responsividade da interface, funcionamento dos filtros e atualização em tempo real dos dados"
+          },
+          {
+            "id": 3,
+            "title": "Implementar autenticação básica e métricas do sistema",
+            "description": "Adicionar sistema de autenticação simples com senha fixa e dashboard de métricas administrativas",
+            "dependencies": [
+              2
+            ],
+            "details": "Implementar middleware de autenticação básica usando senha fixa armazenada em variável de ambiente ADMIN_PASSWORD. Criar tela de login simples e sistema de sessão usando JWT ou session cookies. Desenvolver dashboard com métricas: total de usuários ativos, lembretes criados por dia (últimos 7 dias), taxa de entrega de notificações e usuários mais ativos.",
+            "status": "pending",
+            "testStrategy": "Testar acesso com senha correta e incorreta, verificar proteção de rotas administrativas e precisão das métricas exibidas"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implementar sistema de planos e limitações",
+        "description": "Criar lógica para plano gratuito (3 lembretes) e plano pago ilimitado",
+        "details": "Adicionar campo plan_type na tabela users (free/paid). Implementar middleware de verificação de limite antes de criar lembrete. Para plano free: contar lembretes ativos, bloquear se >= 3. Criar endpoints para upgrade de plano. Implementar lógica de expiração de planos pagos. Adicionar messages informativos sobre limites e upgrade. Configurar webhook para processamento de pagamentos (Stripe/PagSeguro).",
+        "testStrategy": "Testar limitação de 3 lembretes para usuários free, upgrade para plano pago e resetar contadores",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Modificar schema do banco de dados para suportar planos",
+            "description": "Adicionar campo plan_type na tabela users e campos relacionados para controle de planos",
+            "dependencies": [],
+            "details": "Criar migration para adicionar campo plan_type (ENUM: free/paid) na tabela users. Adicionar campos plan_expires_at (TIMESTAMP), plan_updated_at (TIMESTAMP), e reminder_count (INTEGER DEFAULT 0). Criar índices apropriados para consultas de planos. Configurar valores padrão para usuários existentes como 'free'. Testar migration em ambiente de desenvolvimento.",
+            "status": "pending",
+            "testStrategy": "Executar migration em banco de teste, verificar constraints e valores padrão aplicados corretamente"
+          },
+          {
+            "id": 2,
+            "title": "Implementar middleware de verificação de limites",
+            "description": "Criar middleware para verificar limites de lembretes antes da criação",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar PlanLimitMiddleware que verifica o plano do usuário antes de criar lembretes. Para usuários 'free': contar lembretes ativos e bloquear se >= 3. Para usuários 'paid': verificar se plano não expirou. Implementar contadores em cache (Redis) para performance. Retornar erro 403 com mensagem informativa quando limite atingido. Integrar middleware nas rotas de criação de lembretes.",
+            "status": "pending",
+            "testStrategy": "Testar criação de lembretes para usuários free (até 3) e verificar bloqueio no 4º lembrete"
+          },
+          {
+            "id": 3,
+            "title": "Desenvolver endpoints para upgrade e gerenciamento de planos",
+            "description": "Criar APIs para upgrade de plano e consulta de status de assinatura",
+            "dependencies": [
+              2
+            ],
+            "details": "Criar endpoints: POST /api/plan/upgrade (inicia processo de upgrade), GET /api/plan/status (consulta plano atual e limites), POST /api/plan/cancel (cancela assinatura). Implementar lógica para gerar link de pagamento (Stripe/PagSeguro). Criar service PlanService para gerenciar operações de plano. Adicionar validações de entrada e tratamento de erros. Implementar logs para auditoria de mudanças de plano.",
+            "status": "pending",
+            "testStrategy": "Testar endpoints de upgrade, consulta de status e cancelamento com diferentes tipos de usuário"
+          },
+          {
+            "id": 4,
+            "title": "Configurar webhooks de pagamento e processamento",
+            "description": "Implementar webhooks para processar confirmações de pagamento e atualizar planos",
+            "dependencies": [
+              3
+            ],
+            "details": "Configurar webhook endpoint POST /webhook/payment para receber notificações do gateway. Implementar validação de assinatura do webhook para segurança. Criar PaymentProcessor para processar eventos: payment.succeeded (ativar plano paid), payment.failed (manter free), subscription.cancelled (downgrade para free). Implementar retry logic para falhas de processamento. Configurar logs detalhados para auditoria de pagamentos e troubleshooting.",
+            "status": "pending",
+            "testStrategy": "Simular webhooks de pagamento bem-sucedido e falha, verificar atualização correta do plano do usuário"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implementar tratamento de erros e logging",
+        "description": "Configurar sistema robusto de logging e tratamento de erros em produção",
+        "details": "Configurar Winston para logging estruturado com níveis (error, warn, info, debug). Implementar tratamento global de erros com status codes apropriados. Configurar logs para: webhooks recebidos, mensagens enviadas, erros de parsing, falhas de agendamento. Implementar healthcheck endpoint (/health) para monitoramento. Configurar alertas para erros críticos via email/Slack. Implementar timeout handling para APIs externas.",
+        "testStrategy": "Testar logging de diferentes cenários, tratamento de erros da API e endpoint de healthcheck",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configurar Winston para logging estruturado",
+            "description": "Instalar e configurar o Winston com níveis de log apropriados (error, warn, info, debug) e formatação estruturada para produção",
+            "dependencies": [],
+            "details": "Instalar winston e winston-daily-rotate-file. Configurar múltiplos transportes: console para desenvolvimento, arquivo rotativo para produção. Definir formato JSON estruturado com timestamp, level, message, metadata. Configurar rotação diária de logs e retenção de 30 dias. Criar logger centralizado exportável para toda aplicação.",
+            "status": "pending",
+            "testStrategy": "Testar diferentes níveis de log, rotação de arquivos e formato de saída em ambiente de desenvolvimento e produção"
+          },
+          {
+            "id": 2,
+            "title": "Implementar tratamento global de erros",
+            "description": "Criar middleware global para capturar e tratar erros não manipulados com códigos de status HTTP apropriados",
+            "dependencies": [
+              1
+            ],
+            "details": "Criar error handler middleware para Express. Implementar classes de erro customizadas (ValidationError, DatabaseError, APIError). Configurar tratamento para erros síncronos e assíncronos. Definir mapeamento de erros para status codes HTTP corretos. Implementar logging automático de erros com stack trace e contexto da requisição.",
+            "status": "pending",
+            "testStrategy": "Testar captura de diferentes tipos de erro, códigos de status corretos e logging automático de stack traces"
+          },
+          {
+            "id": 3,
+            "title": "Configurar logs específicos para operações críticas",
+            "description": "Implementar logging detalhado para webhooks, envio de mensagens, parsing de dados e agendamento de tarefas",
+            "dependencies": [
+              1
+            ],
+            "details": "Adicionar logs estruturados em: recebimento de webhooks WhatsApp (request/response), envio de mensagens (sucesso/falha), parsing de datas (input/output), agendamento de lembretes (criação/execução/falha). Incluir IDs de correlação para rastreamento. Configurar logs de performance com tempo de execução. Implementar logs de auditoria para ações críticas do usuário.",
+            "status": "pending",
+            "testStrategy": "Verificar logs completos em fluxos end-to-end, correlação entre eventos e métricas de performance"
+          },
+          {
+            "id": 4,
+            "title": "Implementar healthcheck e sistema de alertas",
+            "description": "Criar endpoint de monitoramento /health e configurar alertas automáticos para erros críticos via email ou Slack",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implementar endpoint /health com verificação de: conexão com banco de dados, Redis/queue, APIs externas (WhatsApp, Claude). Configurar timeout handling para chamadas de API externas. Implementar sistema de alertas via email/Slack para: taxa de erro > 5%, tempo de resposta > 2s, falhas de conectividade. Criar dashboard simples de status. Configurar heartbeat para monitoramento externo.",
+            "status": "pending",
+            "testStrategy": "Testar endpoint de health, simulação de falhas de conectividade e disparo automático de alertas"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-21T14:47:31.600Z",
+      "updated": "2025-10-21T14:47:31.600Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

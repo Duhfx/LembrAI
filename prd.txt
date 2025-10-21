@@ -1,0 +1,63 @@
+Ideia refinada: EventMemo.AI — seu assistente de lembretes no WhatsApp
+
+Descrição curta:
+Converse com um assistente no WhatsApp para criar lembretes do dia a dia.
+Exemplo:
+
+💬 “Me lembre de buscar a decoração na terça-feira às 17h.”
+O bot responde:
+“Perfeito! Quer que eu te avise quanto tempo antes?”
+Usuário:
+“1 hora antes.”
+🕒 E pronto — você recebe a mensagem na terça, 16h.
+
+🧱 MVP viável em 1 semana
+Fluxo básico
+
+Usuário inicia conversa no WhatsApp.
+
+O agente interpreta a mensagem (NLP leve ou regras simples + parser de data/hora).
+
+Pergunta se deseja definir antecedência (opcional).
+
+Salva no banco o evento e horário de lembrete.
+
+Um job (cron) agenda o envio da notificação.
+
+No horário certo → envia mensagem no WhatsApp (ou fallback via e-mail).
+
+MVP — escopo mínimo (funcional e vendável)
+
+Criação de lembretes por texto livre (via WhatsApp).
+
+Confirmação do lembrete com resumo (“vou te avisar terça às 16h”).
+
+Envio da notificação pelo próprio WhatsApp.
+
+E-mail de backup (“Lembrete: buscar decoração”).
+
+Painel admin simples para você ver os lembretes ativos.
+
+Stack técnica sugerida
+
+Backend: Node.js (NestJS ou Fastify)
+
+Banco: Supabase / Postgres
+
+Mensageria WhatsApp: Twilio WhatsApp API ou Meta Cloud API
+
+Agendamento: cron jobs com BullMQ ou Agenda.js
+
+Parsing de linguagem natural:
+
+lib: chrono-node (interpreta “terça às 17h”)
+
+ou integração leve com OpenAI GPT-4o-mini (para parsing mais flexível)
+
+E-mails: Resend / SendGrid
+
+Monetização inicial
+
+Plano gratuito: até 3 lembretes ativos
+
+Plano pago: R$9,90/mês (ilimitado)

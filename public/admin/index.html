@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LembrAI - Painel Administrativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stat-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-sent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-free {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+
+        .badge-paid {
+            background: #ffd700;
+            color: #856404;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+
+        .timestamp {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .phone {
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔔 LembrAI</h1>
+            <p class="subtitle">Painel Administrativo</p>
+        </header>
+
+        <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar Dados</button>
+
+        <div id="loading" class="loading">
+            Carregando dados...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="dashboard" style="display: none;">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>👥 Usuários</h3>
+                    <div class="stat-value" id="total-users">0</div>
+                    <div class="stat-details">
+                        <span id="free-users">0</span> gratuitos |
+                        <span id="paid-users">0</span> pagos
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>📝 Lembretes</h3>
+                    <div class="stat-value" id="total-reminders">0</div>
+                    <div class="stat-details">
+                        <span id="pending-reminders">0</span> pendentes |
+                        <span id="sent-reminders">0</span> enviados
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>📤 Notificações</h3>
+                    <div class="stat-value" id="total-notifications">0</div>
+                    <div class="stat-details">
+                        <span id="sent-notifications">0</span> enviadas |
+                        <span id="failed-notifications">0</span> falhas
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>❌ Falhas</h3>
+                    <div class="stat-value" id="failed-reminders">0</div>
+                    <div class="stat-details">
+                        Lembretes com falha
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users -->
+            <div class="section">
+                <h2>Usuários Recentes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Telefone</th>
+                            <th>Plano</th>
+                            <th>Data de Cadastro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-users"></tbody>
+                </table>
+            </div>
+
+            <!-- Recent Reminders -->
+            <div class="section">
+                <h2>Lembretes Recentes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Mensagem</th>
+                            <th>Data do Lembrete</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-reminders"></tbody>
+                </table>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="section">
+                <h2>Notificações Recentes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Lembrete</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-notifications"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/admin';
+
+        async function loadDashboard() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const dashboard = document.getElementById('dashboard');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            dashboard.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (!response.ok) throw new Error('Failed to load data');
+
+                const data = await response.json();
+
+                // Update statistics
+                document.getElementById('total-users').textContent = data.users.total;
+                document.getElementById('free-users').textContent = data.users.free;
+                document.getElementById('paid-users').textContent = data.users.paid;
+
+                document.getElementById('total-reminders').textContent = data.reminders.total;
+                document.getElementById('pending-reminders').textContent = data.reminders.pending;
+                document.getElementById('sent-reminders').textContent = data.reminders.sent;
+                document.getElementById('failed-reminders').textContent = data.reminders.failed;
+
+                document.getElementById('total-notifications').textContent = data.notifications.total;
+                document.getElementById('sent-notifications').textContent = data.notifications.sent;
+                document.getElementById('failed-notifications').textContent = data.notifications.failed;
+
+                // Update recent users
+                const usersTable = document.getElementById('recent-users');
+                usersTable.innerHTML = data.recentActivity.recentUsers.map(user => `
+                    <tr>
+                        <td><span class="phone">${user.phone}</span></td>
+                        <td><span class="badge badge-${user.planType.toLowerCase()}">${user.planType}</span></td>
+                        <td><span class="timestamp">${new Date(user.createdAt).toLocaleString('pt-BR')}</span></td>
+                    </tr>
+                `).join('');
+
+                // Update recent reminders
+                const remindersTable = document.getElementById('recent-reminders');
+                remindersTable.innerHTML = data.recentActivity.recentReminders.map(reminder => `
+                    <tr>
+                        <td><span class="phone">${reminder.user.phone}</span></td>
+                        <td>${reminder.message.substring(0, 50)}${reminder.message.length > 50 ? '...' : ''}</td>
+                        <td><span class="timestamp">${new Date(reminder.reminderDatetime).toLocaleString('pt-BR')}</span></td>
+                        <td><span class="badge badge-${reminder.status.toLowerCase()}">${reminder.status}</span></td>
+                    </tr>
+                `).join('');
+
+                // Update recent notifications
+                const notificationsTable = document.getElementById('recent-notifications');
+                notificationsTable.innerHTML = data.recentActivity.recentNotifications.map(notification => `
+                    <tr>
+                        <td><span class="phone">${notification.reminder.user.phone}</span></td>
+                        <td>${notification.reminder.message.substring(0, 40)}${notification.reminder.message.length > 40 ? '...' : ''}</td>
+                        <td><span class="badge">${notification.type}</span></td>
+                        <td><span class="badge badge-${notification.status.toLowerCase()}">${notification.status}</span></td>
+                        <td><span class="timestamp">${new Date(notification.createdAt).toLocaleString('pt-BR')}</span></td>
+                    </tr>
+                `).join('');
+
+                loading.style.display = 'none';
+                dashboard.style.display = 'block';
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = `❌ Erro ao carregar dados: ${err.message}`;
+            }
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>

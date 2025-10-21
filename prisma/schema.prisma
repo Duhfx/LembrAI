@@ -1,0 +1,87 @@
+// LembrAI - Prisma Schema
+// Database: Supabase PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum PlanType {
+  FREE
+  PAID
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  WHATSAPP
+  EMAIL
+}
+
+enum NotificationStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
+// Models
+model User {
+  id         String     @id @default(uuid())
+  phone      String     @unique
+  email      String?
+  planType   PlanType   @default(FREE) @map("plan_type")
+  planExpiresAt DateTime? @map("plan_expires_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  reminders  Reminder[]
+
+  @@map("users")
+}
+
+model Reminder {
+  id               String         @id @default(uuid())
+  userId           String         @map("user_id")
+  message          String         @db.Text
+  originalDatetime DateTime       @map("original_datetime")
+  reminderDatetime DateTime       @map("reminder_datetime")
+  advanceTime      Int?           @map("advance_time") // in minutes
+  status           ReminderStatus @default(PENDING)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([reminderDatetime])
+  @@map("reminders")
+}
+
+model Notification {
+  id         String             @id @default(uuid())
+  reminderId String             @map("reminder_id")
+  type       NotificationType
+  status     NotificationStatus @default(PENDING)
+  sentAt     DateTime?          @map("sent_at")
+  error      String?            @db.Text
+  createdAt  DateTime           @default(now()) @map("created_at")
+
+  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@index([reminderId])
+  @@index([status])
+  @@map("notifications")
+}
