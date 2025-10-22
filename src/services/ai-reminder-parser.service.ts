@@ -103,14 +103,30 @@ INSTRUÇÕES IMPORTANTES:
 - Remova da mensagem TUDO relacionado a tempo: "umas", "às", horários, dias da semana, "amanhã", "hoje", etc.
 - O texto limpo deve ser APENAS a ação/tarefa do lembrete
 - Seja conciso e objetivo no texto limpo
-- Se houver data/hora, calcule corretamente baseado na data atual
-- Dias da semana referem-se à próxima ocorrência
+
+⚠️ REGRA CRÍTICA - DATA E HORA:
+- APENAS retorne dateTime se AMBOS data E hora estiverem EXPLICITAMENTE mencionados na mensagem
+- Se houver APENAS data sem horário (ex: "amanhã", "segunda") → hasDateTime: false, dateTime: null
+- Horário deve estar explícito: "9h", "15h30", "às 10h", "9 da manhã", "19h30"
+- Se tiver apenas horário SEM palavra de tempo (ex: "academia 19h30"):
+  * Se horário for FUTURO no mesmo dia → use hoje + horário
+  * Se horário for PASSADO → use amanhã + horário
+- Exemplos VÁLIDOS (retornar dateTime):
+  * "amanhã às 15h" ✓
+  * "segunda 9h" ✓
+  * "hoje 18h30" ✓ (se o horário já passou hoje, use amanhã no mesmo horário)
+  * "em 2 horas" ✓
+  * "academia 19h30" ✓ (inferir hoje ou amanhã baseado no horário atual)
+- Exemplos INVÁLIDOS (retornar null):
+  * "amanhã" ✗ (só data)
+  * "segunda-feira" ✗ (só data)
+  * "no próximo sábado" ✗ (só data)
 
 FORMATO DE RESPOSTA (JSON):
 {
   "cleanedMessage": "texto limpo do lembrete sem referências de tempo",
   "hasDateTime": true/false,
-  "dateTime": "YYYY-MM-DD HH:mm" (ou null se não houver),
+  "dateTime": "YYYY-MM-DD HH:mm" (ou null se não houver data+hora completos),
   "confidence": "high/medium/low"
 }
 
@@ -127,6 +143,18 @@ Saída: {"cleanedMessage": "Reunião importante", "hasDateTime": false, "dateTim
 
 Entrada: "ligar pro João segunda 10h"
 Saída: {"cleanedMessage": "Ligar pro João", "hasDateTime": true, "dateTime": "2025-10-27 10:00", "confidence": "high"}
+
+Entrada: "amanhã é meu aniversário"
+Saída: {"cleanedMessage": "Meu aniversário", "hasDateTime": false, "dateTime": null, "confidence": "high"}
+
+Entrada: "lembrete para segunda-feira"
+Saída: {"cleanedMessage": "Lembrete", "hasDateTime": false, "dateTime": null, "confidence": "high"}
+
+Entrada: "fazer exercício em 2 horas"
+Saída: {"cleanedMessage": "Fazer exercício", "hasDateTime": true, "dateTime": "2025-10-22 00:40", "confidence": "high"}
+
+Entrada: "fazer exercício hoje 18h"
+Saída: {"cleanedMessage": "Fazer exercício", "hasDateTime": true, "dateTime": "2025-10-22 18:00", "confidence": "high"}
 
 Responda APENAS com o JSON, sem texto adicional.`;
   }

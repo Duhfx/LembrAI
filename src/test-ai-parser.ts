@@ -26,41 +26,74 @@ async function testAIParser() {
       name: 'Caso original do bug',
       input: 'me lembre umas 9:00 de ligar para o cliente',
       expectedCleaned: 'Ligar para o cliente',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Mensagem com "amanhã"',
       input: 'comprar leite amanhã às 15h',
       expectedCleaned: 'Comprar leite',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Mensagem com dia da semana',
       input: 'ligar pro João segunda 10h',
       expectedCleaned: 'Ligar pro João',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Mensagem sem data/hora',
       input: 'reunião importante',
       expectedCleaned: 'Reunião importante',
+      shouldHaveDateTime: false,
     },
     {
       name: 'Mensagem com "hoje"',
       input: 'fazer exercício hoje 18h',
       expectedCleaned: 'Fazer exercício',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Mensagem com tempo relativo',
       input: 'buscar encomenda em 2 horas',
       expectedCleaned: 'Buscar encomenda',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Mensagem complexa',
       input: 'me lembrar de pagar a conta de luz amanhã às 9h da manhã',
       expectedCleaned: 'Pagar a conta de luz',
+      shouldHaveDateTime: true,
     },
     {
       name: 'Apenas horário',
       input: 'academia 19h30',
       expectedCleaned: 'Academia',
+      shouldHaveDateTime: true,
+    },
+    // NOVOS TESTES - Casos sem horário explícito
+    {
+      name: '🆕 Apenas data sem horário - "amanhã é aniversário"',
+      input: 'amanhã é meu aniversário',
+      expectedCleaned: 'Meu aniversário',
+      shouldHaveDateTime: false,
+    },
+    {
+      name: '🆕 Apenas data sem horário - "lembrete para segunda"',
+      input: 'lembrete para segunda-feira',
+      expectedCleaned: 'Lembrete',
+      shouldHaveDateTime: false,
+    },
+    {
+      name: '🆕 Apenas data sem horário - "no próximo sábado"',
+      input: 'comprar presente no próximo sábado',
+      expectedCleaned: 'Comprar presente',
+      shouldHaveDateTime: false,
+    },
+    {
+      name: '🆕 Apenas data sem horário - "semana que vem"',
+      input: 'reunião semana que vem',
+      expectedCleaned: 'Reunião',
+      shouldHaveDateTime: false,
     },
   ];
 
@@ -93,11 +126,26 @@ async function testAIParser() {
       // Simple check: cleaned message should not contain time references
       const hasTimeReferences = /\d{1,2}(h|:)\d{0,2}|amanhã|hoje|segunda|terça|quarta|quinta|sexta|sabado|domingo/i.test(result.cleanedMessage);
 
-      if (!hasTimeReferences && cleanedLower.includes(expectedLower.split(' ')[0])) {
+      // Check dateTime expectation
+      const dateTimeCorrect = testCase.shouldHaveDateTime
+        ? result.dateTime !== undefined
+        : result.dateTime === undefined;
+
+      const messageCorrect = !hasTimeReferences && cleanedLower.includes(expectedLower.split(' ')[0]);
+
+      if (messageCorrect && dateTimeCorrect) {
         console.log(`   ✅ Sucesso - Mensagem limpa corretamente`);
+        if (!testCase.shouldHaveDateTime) {
+          console.log(`   ✅ DateTime corretamente NULL (não inventou horário)`);
+        }
         successCount++;
       } else {
-        console.log(`   ⚠️  Atenção - Esperado algo próximo de: "${testCase.expectedCleaned}"`);
+        if (!messageCorrect) {
+          console.log(`   ⚠️  Atenção - Esperado algo próximo de: "${testCase.expectedCleaned}"`);
+        }
+        if (!dateTimeCorrect) {
+          console.log(`   ❌ ERRO - DateTime deveria ser ${testCase.shouldHaveDateTime ? 'preenchido' : 'NULL'}`);
+        }
         failCount++;
       }
 

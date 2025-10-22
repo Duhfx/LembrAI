@@ -160,3 +160,4 @@ The app is designed for platforms like Render.com:
 - The scheduler starts automatically via `OnModuleInit` in `ReminderSchedulerService`
 - Static files (admin panel) are served from `public/` directory
 - SEMPRE faça testes do que for implementado
+- Faça commit e push no git SOMENTE quando eu pedir
