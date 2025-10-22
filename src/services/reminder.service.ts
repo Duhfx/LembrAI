@@ -76,4 +76,33 @@ export class ReminderService {
       orderBy: { reminderDatetime: 'desc' },
     });
   }
+
+  /**
+   * Count active reminders for a user
+   */
+  async countActiveByUserId(userId: string): Promise<number> {
+    return this.db.reminder.count({
+      where: {
+        userId,
+        status: 'PENDING',
+      },
+    });
+  }
+
+  /**
+   * Count reminders created by user in current month
+   */
+  async countMonthlyByUserId(userId: string): Promise<number> {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    return this.db.reminder.count({
+      where: {
+        userId,
+        createdAt: {
+          gte: firstDayOfMonth,
+        },
+      },
+    });
+  }
 }

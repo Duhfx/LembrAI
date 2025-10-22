@@ -9,6 +9,15 @@ export enum ConversationState {
 }
 
 /**
+ * Conversation Message for AI history
+ */
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+/**
  * Conversation Context
  */
 export interface ConversationContext {
@@ -18,6 +27,7 @@ export interface ConversationContext {
   reminderMessage?: string;
   parsedDateTime?: Date;
   advanceMinutes?: number;
+  messageHistory?: ConversationMessage[];
   createdAt: Date;
   updatedAt: Date;
 }

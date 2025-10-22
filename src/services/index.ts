@@ -7,6 +7,8 @@ export * from './whatsapp.service';
 export * from './parse-datetime.service';
 export * from './parse-datetime-pt.service';
 export * from './ai-reminder-parser.service';
+export * from './audio-transcription.service';
+export * from './gemini-conversation.service';
 export * from './conversation-context.service';
 export * from './chatbot.service';
 export * from './reminder-scheduler.service';

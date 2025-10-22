@@ -7,17 +7,20 @@ import { AIReminderParserService } from './services/ai-reminder-parser.service';
 dotenv.config();
 
 /**
- * Test AI Reminder Parser
+ * Test AI Reminder Parser (Gemini)
  */
 async function testAIParser() {
-  console.log('🧪 Testando AI Reminder Parser\n');
+  console.log('🧪 Testando AI Reminder Parser (Gemini)\n');
   console.log('='.repeat(80));
 
   // Initialize services
   const offlineParser = new ParseDateTimePtService();
   const aiParser = new AIReminderParserService(offlineParser);
 
-  console.log(`\n🤖 AI Parser Status: ${aiParser.isEnabled() ? '✅ Enabled' : '❌ Disabled'}`);
+  console.log(`\n🤖 AI Parser Status (Gemini): ${aiParser.isEnabled() ? '✅ Enabled' : '❌ Disabled'}`);
+  if (!aiParser.isEnabled()) {
+    console.log('⚠️  Configure GEMINI_API_KEY no .env para habilitar');
+  }
   console.log('='.repeat(80));
 
   // Test cases

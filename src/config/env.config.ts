@@ -19,7 +19,7 @@ export const envConfig = {
 
   ai: {
     openaiKey: process.env.OPENAI_API_KEY || '',
-    anthropicKey: process.env.ANTHROPIC_API_KEY || '',
+    geminiKey: process.env.GEMINI_API_KEY || '',
   },
 
   email: {

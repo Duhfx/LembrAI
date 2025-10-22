@@ -2,6 +2,8 @@ import { Controller, Post, Get, Body, Query, Logger, Req, Res } from '@nestjs/co
 import { Request, Response } from 'express';
 import { WhatsAppService } from '../services/whatsapp.service';
 import { ChatbotService } from '../services/chatbot.service';
+import { AudioTranscriptionService } from '../services/audio-transcription.service';
+import { envConfig } from '../config';
 
 interface TwilioWebhookBody {
   MessageSid: string;
@@ -9,6 +11,8 @@ interface TwilioWebhookBody {
   To: string;
   Body: string;
   NumMedia?: string;
+  MediaContentType0?: string;
+  MediaUrl0?: string;
   ProfileName?: string;
   WaId?: string;
 }
@@ -20,6 +24,7 @@ export class WebhookController {
   constructor(
     private readonly whatsappService: WhatsAppService,
     private readonly chatbotService: ChatbotService,
+    private readonly audioTranscriptionService: AudioTranscriptionService,
   ) {}
 
   /**
@@ -47,17 +52,69 @@ export class WebhookController {
       this.logger.log('📨 Received WhatsApp message');
       this.logger.debug(`From: ${body.From}`);
       this.logger.debug(`Message: ${body.Body}`);
+      this.logger.debug(`NumMedia: ${body.NumMedia}`);
+      this.logger.debug(`MediaContentType: ${body.MediaContentType0}`);
       this.logger.debug(`Profile: ${body.ProfileName}`);
 
       // Extract phone number (remove whatsapp: prefix)
       const phoneNumber = body.From.replace('whatsapp:', '');
-      const message = body.Body?.trim() || '';
 
-      // Log the incoming message
-      this.logger.log(`Message from ${phoneNumber}: "${message}"`);
+      // Check if message contains audio
+      const hasMedia = body.NumMedia && parseInt(body.NumMedia) > 0;
+      const isAudio = hasMedia && body.MediaContentType0?.startsWith('audio/');
 
-      // Process message through chatbot
-      await this.chatbotService.processMessage(phoneNumber, message);
+      if (isAudio && body.MediaUrl0) {
+        this.logger.log(`🎤 Audio message detected from ${phoneNumber}`);
+
+        // Send "processing" message to user
+        await this.whatsappService.sendTextMessage(
+          phoneNumber,
+          '🎤 Áudio recebido! Processando...',
+        );
+
+        // Download and transcribe audio
+        const audioData = await this.audioTranscriptionService.downloadAudioFromUrl(
+          body.MediaUrl0,
+          envConfig.twilio.accountSid,
+          envConfig.twilio.authToken,
+        );
+
+        if (!audioData) {
+          this.logger.error('❌ Failed to download audio');
+          await this.whatsappService.sendTextMessage(
+            phoneNumber,
+            '❌ Não consegui baixar o áudio. Por favor, tente enviar novamente.',
+          );
+          return res.status(200).send('OK');
+        }
+
+        // Transcribe audio
+        const transcription = await this.audioTranscriptionService.transcribeAudio(
+          audioData.buffer,
+          audioData.mimeType,
+        );
+
+        if (!transcription.success || !transcription.text) {
+          this.logger.error(`❌ Audio transcription failed: ${transcription.error}`);
+          await this.whatsappService.sendTextMessage(
+            phoneNumber,
+            '❌ Não consegui entender o áudio. Por favor, tente enviar um áudio mais claro ou digite sua mensagem.',
+          );
+          return res.status(200).send('OK');
+        }
+
+        this.logger.log(`✅ Audio transcribed: "${transcription.text}"`);
+
+        // Process transcribed text
+        await this.chatbotService.processMessage(phoneNumber, transcription.text, true);
+      } else {
+        // Regular text message
+        const message = body.Body?.trim() || '';
+        this.logger.log(`Message from ${phoneNumber}: "${message}"`);
+
+        // Process message through chatbot
+        await this.chatbotService.processMessage(phoneNumber, message);
+      }
 
       // Respond to Twilio with 200 OK
       return res.status(200).send('OK');

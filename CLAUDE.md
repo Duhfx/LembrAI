@@ -24,24 +24,34 @@ npm run db:studio          # Open Prisma Studio for database inspection
 
 ### Testing
 ```bash
-npm run db:test            # Test database connectivity
-npm run test:whatsapp      # Test WhatsApp/Twilio integration
-npm run test:parser        # Test Portuguese date/time parser
-npm run test:admin         # Test admin API endpoints
+npm run db:test               # Test database connectivity
+npm run test:whatsapp         # Test WhatsApp/Twilio integration
+npm run test:parser           # Test Portuguese date/time parser
+npm run test:ai-parser        # Test Gemini AI parser for reminders
+npm run test:ai-conversation  # Test AI natural conversation flow ⭐
+npm run test:audio            # Test audio transcription service
+npm run test:admin            # Test admin API endpoints
 ```
 
 ## Architecture
 
-### Core Flow: Stateful Conversation Pattern
+### Core Flow: AI-Powered Natural Conversation
 
-The chatbot uses a **state machine pattern** managed by `ConversationContextService` (in-memory storage, consider Redis for production). Each user conversation progresses through states defined in `ConversationState`:
+The chatbot uses **Gemini AI** for natural, context-aware conversations. The `GeminiConversationService` manages the entire dialogue flow:
 
-1. **INITIAL** → User sends reminder message (e.g., "Comprar leite")
-2. **WAITING_DATETIME** → Bot asks "Quando?" / user responds with date/time
-3. **WAITING_ADVANCE_TIME** → Bot asks "Quanto tempo antes?" / user specifies advance notice
-4. **CONFIRMING** → Bot shows summary / user confirms or cancels
+**How it works:**
+1. User sends any message in natural language
+2. AI analyzes message + conversation history + user context
+3. AI responds naturally and extracts structured data (reminder, date, time, advance notice)
+4. AI asks for missing information when needed
+5. When all data is collected, creates the reminder
 
-The `ChatbotService` (src/services/chatbot.service.ts) routes messages to state-specific handlers and manages state transitions.
+**Examples:**
+- **One-shot**: "Me lembre de comprar leite amanhã às 15h" → AI extracts everything, asks only for advance time
+- **Multi-turn**: "Preciso lembrar de uma coisa" → AI asks what, when, advance time progressively
+- **Natural flow**: Supports greetings, clarifications, corrections, and casual conversation
+
+The system maintains conversation history (last 10 messages) for context, stored in `ConversationContextService` (in-memory, use Redis for production).
 
 ### Message Flow
 
@@ -57,13 +67,19 @@ WhatsApp → Twilio Webhook → WebhookController → ChatbotService → [State 
 
 ### Date/Time Parsing
 
-The system uses a **custom Portuguese parser** (`ParseDateTimePtService`) that handles:
+The system uses **AI-powered parsing with Gemini** (`AIReminderParserService`) that:
+- Extracts cleaned reminder messages (removing time references)
+- Detects date and time from natural language in Portuguese
+- Falls back to custom offline parser (`ParseDateTimePtService`) if AI is unavailable
+- Handles complex expressions like "me lembre umas 9:00 de ligar para o cliente"
+
+The offline parser supports:
 - Relative days: "hoje", "amanhã", "depois de amanhã"
 - Weekdays: "segunda", "terça", etc. (next occurrence)
 - Relative time: "em 2 horas", "daqui 30 minutos"
 - Specific times: "15h", "09:30", "3 da tarde"
 
-Parsing strategies are tried in order (src/services/parse-datetime-pt.service.ts). The parser can detect datetime in the initial message (e.g., "Comprar leite amanhã às 15h") and skip the WAITING_DATETIME state.
+The parser can detect datetime in the initial message (e.g., "Comprar leite amanhã às 15h") and skip the WAITING_DATETIME state.
 
 ### Reminder Scheduling
 
@@ -112,16 +128,18 @@ DATABASE_URL              # PostgreSQL connection string (Supabase)
 TWILIO_ACCOUNT_SID        # Twilio account ID
 TWILIO_AUTH_TOKEN         # Twilio auth token
 TWILIO_WHATSAPP_NUMBER    # Format: whatsapp:+14155238886
-ANTHROPIC_API_KEY         # Optional: Claude API for parsing fallback
-OPENAI_API_KEY            # Optional: OpenAI fallback
+GEMINI_API_KEY            # Required: Gemini API for parsing and audio transcription
 PORT                      # Default 3000
 ```
 
 ## Key Services
 
-- **ChatbotService**: Orchestrates conversation flow and state transitions
-- **ConversationContextService**: In-memory conversation state (10min timeout)
-- **ParseDateTimePtService**: Portuguese natural language date/time parsing
+- **GeminiConversationService**: AI-powered natural conversation engine (main conversation handler)
+- **ChatbotService**: Orchestrates overall flow, handles commands, and manages AI actions
+- **ConversationContextService**: Stores conversation history and context (in-memory, 10min timeout)
+- **AIReminderParserService**: Gemini-powered reminder parser for single-shot extraction (legacy support)
+- **ParseDateTimePtService**: Portuguese natural language date/time parsing (offline fallback)
+- **AudioTranscriptionService**: Gemini-powered audio transcription for WhatsApp voice messages
 - **PlanLimitsService**: Enforces FREE/PAID plan restrictions
 - **ReminderSchedulerService**: Cron-based notification delivery
 - **WhatsAppService**: Twilio API wrapper for sending messages
@@ -144,6 +162,18 @@ Special commands handled in `ChatbotService.handleCommand()`:
 - `/lembretes` - List user's active reminders
 - `/plano` - Show plan info and current usage
 
+## Audio Message Support
+
+Users can send **voice messages** via WhatsApp to create reminders:
+1. User sends audio message on WhatsApp
+2. Twilio webhook delivers audio URL to `/webhook/whatsapp`
+3. `AudioTranscriptionService` downloads audio from Twilio
+4. Gemini API transcribes audio to text in Portuguese
+5. Transcribed text is processed normally by `ChatbotService`
+6. User receives feedback: "🎤 Áudio recebido! Processando..."
+
+Supported audio formats: OGG (WhatsApp default), MPEG, WAV, WebM
+
 ## Database Migrations
 
 Prisma migrations are not tracked in this repo. For schema changes:
@@ -159,5 +189,52 @@ The app is designed for platforms like Render.com:
 - Set Twilio webhook URL to: `https://your-domain.com/webhook/whatsapp`
 - The scheduler starts automatically via `OnModuleInit` in `ReminderSchedulerService`
 - Static files (admin panel) are served from `public/` directory
+- **GEMINI_API_KEY is required** for AI parsing and audio transcription
 - SEMPRE faça testes do que for implementado
 - Faça commit e push no git SOMENTE quando eu pedir
+
+## AI-Powered Features
+
+### Natural Conversation
+The chatbot uses **Gemini AI** for intelligent, context-aware conversations:
+- **Understands intent**: Recognizes what user wants even with casual language
+- **Maintains context**: Remembers previous messages in the conversation
+- **Asks smart questions**: Only requests missing information
+- **Extracts structured data**: Converts natural language to reminder data
+- **Validates automatically**: Checks dates, times, and plan limits
+
+### Conversation Examples
+
+**Simple (1-turn):**
+```
+Usuário: "Me lembre de comprar leite amanhã às 15h"
+Bot: "Perfeito! Vou te lembrar de comprar leite amanhã às 15h. ⏰ Quer ser avisado quanto tempo antes?"
+```
+
+**Natural (multi-turn):**
+```
+Usuário: "Oi!"
+Bot: "Olá! 😊 Como posso te ajudar a organizar seus lembretes hoje?"
+Usuário: "Preciso lembrar de uma coisa"
+Bot: "Legal! 😊 Para qual dia e horário você precisa desse lembrete?"
+Usuário: "Reunião com cliente amanhã às 14h"
+Bot: "Beleza! Então a Reunião com cliente é amanhã, às 14h. Quer que eu te avise com antecedência?"
+Usuário: "1 hora antes"
+Bot: "Show! Te avisarei da Reunião com cliente às 13h de amanhã. ✅"
+```
+
+### Fallback System
+If AI is unavailable or fails:
+- Automatic fallback to offline Portuguese parser
+- Commands always work (`/ajuda`, `/lembretes`, etc.)
+- No functionality loss, just less natural responses
+
+## API Costs and Limits
+
+**Gemini API (Google)**:
+- Model used: `gemini-2.0-flash-exp`
+- Free tier: 15 requests/minute, 1500 requests/day
+- Features: Natural conversation + Audio transcription + Text parsing
+- Much cheaper than Claude/OpenAI for similar functionality
+- Rate limit handling: Automatic fallback to offline mode
+- Check current pricing: https://ai.google.dev/pricing

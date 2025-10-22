@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as chrono from 'chrono-node';
 import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
 import { envConfig } from '../config';
 
 export interface ParsedDateTime {
@@ -9,15 +8,18 @@ export interface ParsedDateTime {
   date?: Date;
   originalText: string;
   confidence: 'high' | 'medium' | 'low';
-  method: 'chrono' | 'openai' | 'claude' | 'failed';
+  method: 'chrono' | 'openai' | 'failed';
   formattedDate?: string;
 }
 
+/**
+ * DEPRECATED: This service is being replaced by ParseDateTimePtService + AIReminderParserService
+ * Kept for backwards compatibility only
+ */
 @Injectable()
 export class ParseDateTimeService {
   private readonly logger = new Logger(ParseDateTimeService.name);
   private readonly openai: OpenAI | null;
-  private readonly claude: Anthropic | null;
   private readonly customChrono: chrono.Chrono;
 
   constructor() {
@@ -31,18 +33,8 @@ export class ParseDateTimeService {
       this.openai = null;
     }
 
-    // Initialize Claude (Anthropic) if API key is available
-    if (envConfig.ai.anthropicKey) {
-      this.claude = new Anthropic({
-        apiKey: envConfig.ai.anthropicKey,
-      });
-      this.logger.log('✅ Claude (Anthropic) initialized for date parsing fallback');
-    } else {
-      this.claude = null;
-    }
-
     // Warn if no AI fallback is available
-    if (!this.openai && !this.claude) {
+    if (!this.openai) {
       this.logger.warn('⚠️  No AI API keys found. AI fallback disabled.');
     }
 
@@ -102,16 +94,7 @@ export class ParseDateTimeService {
       return chronoResult;
     }
 
-    // Fallback to AI - try Claude first (if available), then OpenAI
-    if (this.claude) {
-      this.logger.log('🔄 Trying Claude (Anthropic) fallback...');
-      const claudeResult = await this.parseWithClaude(normalizedText, reference);
-      if (claudeResult.success) {
-        this.logger.log(`✅ Claude parsed successfully: ${claudeResult.formattedDate}`);
-        return claudeResult;
-      }
-    }
-
+    // Fallback to AI - try OpenAI
     if (this.openai) {
       this.logger.log('🔄 Trying OpenAI fallback...');
       const openaiResult = await this.parseWithOpenAI(normalizedText, reference);
@@ -178,91 +161,6 @@ export class ParseDateTimeService {
         originalText: text,
         confidence: 'low',
         method: 'chrono',
-      };
-    }
-  }
-
-  /**
-   * Parse using Claude (Anthropic)
-   */
-  private async parseWithClaude(text: string, reference: Date): Promise<ParsedDateTime> {
-    if (!this.claude) {
-      return {
-        success: false,
-        originalText: text,
-        confidence: 'low',
-        method: 'claude',
-      };
-    }
-
-    try {
-      const prompt = `Você é um assistente especializado em extrair datas e horários de textos em português brasileiro.
-
-Data/hora de referência: ${reference.toISOString()}
-Texto: "${text}"
-
-Extraia a data e horário do texto acima. Retorne APENAS um JSON no formato:
-{
-  "date": "ISO 8601 date string",
-  "confidence": "high" | "medium" | "low"
-}
-
-Se não conseguir extrair, retorne:
-{
-  "date": null,
-  "confidence": "low"
-}`;
-
-      const message = await this.claude.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 200,
-        temperature: 0.1,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      });
-
-      const content = message.content[0];
-      if (content.type !== 'text') {
-        throw new Error('Unexpected response type from Claude');
-      }
-
-      const parsed = JSON.parse(content.text.trim());
-
-      if (!parsed.date) {
-        return {
-          success: false,
-          originalText: text,
-          confidence: 'low',
-          method: 'claude',
-        };
-      }
-
-      const date = new Date(parsed.date);
-
-      // Validate date
-      if (isNaN(date.getTime())) {
-        throw new Error('Invalid date from Claude');
-      }
-
-      return {
-        success: true,
-        date,
-        originalText: text,
-        confidence: parsed.confidence || 'medium',
-        method: 'claude',
-        formattedDate: this.formatDate(date),
-      };
-    } catch (error: any) {
-      this.logger.error(`Claude parsing error: ${error.message}`);
-      return {
-        success: false,
-        originalText: text,
-        confidence: 'low',
-        method: 'claude',
       };
     }
   }

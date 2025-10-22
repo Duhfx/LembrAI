@@ -19,7 +19,10 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(npm run test:ai-parser:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run test:audio:*)",
+      "Bash(npm run test:ai-conversation:*)"
     ],
     "deny": [],
     "ask": []

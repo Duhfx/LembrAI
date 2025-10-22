@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService } from './services';
+import { DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, AudioTranscriptionService, GeminiConversationService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService } from './services';
 import { WebhookController, AdminController } from './controllers';
 
 @Module({
@@ -12,7 +12,7 @@ import { WebhookController, AdminController } from './controllers';
     }),
   ],
   controllers: [WebhookController, AdminController],
-  providers: [DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService],
-  exports: [DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService],
+  providers: [DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, AudioTranscriptionService, GeminiConversationService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService],
+  exports: [DatabaseService, UserService, ReminderService, NotificationService, WhatsAppService, ParseDateTimeService, ParseDateTimePtService, AIReminderParserService, AudioTranscriptionService, GeminiConversationService, ConversationContextService, ChatbotService, ReminderSchedulerService, AdminService, PlanLimitsService],
 })
 export class AppModule {}

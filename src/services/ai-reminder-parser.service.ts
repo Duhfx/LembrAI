@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { envConfig } from '../config/env.config';
 import { ParseDateTimePtService } from './parse-datetime-pt.service';
 
@@ -13,26 +13,24 @@ export interface AIParseResult {
 }
 
 /**
- * AI-powered reminder parser using Claude API
+ * AI-powered reminder parser using Gemini API
  * Extracts cleaned reminder message and datetime from user input
  */
 @Injectable()
 export class AIReminderParserService {
   private readonly logger = new Logger(AIReminderParserService.name);
-  private readonly client: Anthropic | null = null;
+  private readonly genAI: GoogleGenerativeAI | null = null;
   private readonly enabled: boolean;
 
   constructor(private readonly offlineParser: ParseDateTimePtService) {
-    // Initialize Claude client if API key is available
-    if (envConfig.ai.anthropicKey) {
-      this.client = new Anthropic({
-        apiKey: envConfig.ai.anthropicKey,
-      });
+    // Initialize Gemini client if API key is available
+    if (envConfig.ai.geminiKey) {
+      this.genAI = new GoogleGenerativeAI(envConfig.ai.geminiKey);
       this.enabled = true;
-      this.logger.log('✅ AI Parser enabled (Claude API)');
+      this.logger.log('✅ AI Parser enabled (Gemini API)');
     } else {
       this.enabled = false;
-      this.logger.warn('⚠️  AI Parser disabled (no ANTHROPIC_API_KEY)');
+      this.logger.warn('⚠️  AI Parser disabled (no GEMINI_API_KEY)');
     }
   }
 
@@ -41,35 +39,25 @@ export class AIReminderParserService {
    */
   async parseReminder(userMessage: string): Promise<AIParseResult> {
     // If AI is not enabled, use offline parser immediately
-    if (!this.enabled || !this.client) {
+    if (!this.enabled || !this.genAI) {
       return this.fallbackToOfflineParser(userMessage);
     }
 
     try {
       this.logger.log(`🤖 Parsing with AI: "${userMessage}"`);
 
-      const response = await this.client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        temperature: 0,
-        messages: [
-          {
-            role: 'user',
-            content: this.buildPrompt(userMessage),
-          },
-        ],
-      });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
-      const content = response.content[0];
-      if (content.type !== 'text') {
-        throw new Error('Unexpected response type from Claude');
-      }
+      const prompt = this.buildPrompt(userMessage);
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
 
-      const result = this.parseAIResponse(content.text, userMessage);
+      const parseResult = this.parseAIResponse(text, userMessage);
 
-      if (result.success) {
-        this.logger.log(`✅ AI parsed successfully: "${result.cleanedMessage}"`);
-        return result;
+      if (parseResult.success) {
+        this.logger.log(`✅ AI parsed successfully: "${parseResult.cleanedMessage}"`);
+        return parseResult;
       } else {
         this.logger.warn(`⚠️  AI parsing failed, using fallback`);
         return this.fallbackToOfflineParser(userMessage);
@@ -81,7 +69,7 @@ export class AIReminderParserService {
   }
 
   /**
-   * Build prompt for Claude API
+   * Build prompt for Gemini API
    */
   private buildPrompt(userMessage: string): string {
     const now = new Date();
