@@ -103,7 +103,31 @@ export class ChatbotService {
       };
     }
 
-    // Store the reminder message
+    // Try to extract date/time from the initial message
+    const parsed = this.dateParser.parseDateTime(message);
+
+    if (parsed.success && parsed.date) {
+      // Validate date is in the future
+      if (this.dateParser.validateDateTime(parsed.date)) {
+        // Extract the reminder text (remove the date/time part)
+        const reminderText = this.extractReminderText(message);
+
+        // Store both message and parsed date
+        this.contextService.updateContext(phone, {
+          reminderMessage: reminderText,
+          parsedDateTime: parsed.date,
+        });
+
+        const formattedDate = this.dateParser.formatDate(parsed.date);
+
+        return {
+          message: `📝 Entendi! Vou te lembrar sobre:\n"${reminderText}"\n\n✅ Data: ${formattedDate}\n\n⏰ Quanto tempo ANTES você quer ser avisado?\n\nExemplos:\n• 30 minutos antes\n• 1 hora antes\n• 2 horas antes\n• na hora (0 minutos)`,
+          nextState: ConversationState.WAITING_ADVANCE_TIME,
+        };
+      }
+    }
+
+    // If no date found or invalid, ask for it
     this.contextService.updateContext(phone, {
       reminderMessage: message,
     });
@@ -331,6 +355,38 @@ export class ChatbotService {
 
     const usageMessage = await this.planLimits.formatUsageMessage(user.id);
     await this.whatsapp.sendTextMessage(phone, usageMessage);
+  }
+
+  /**
+   * Extract reminder text by removing date/time expressions
+   */
+  private extractReminderText(message: string): string {
+    // Remove common date/time patterns
+    let text = message;
+
+    // Remove patterns like "amanhã às 19h", "segunda 9h", "em 2 horas"
+    const patterns = [
+      /\s+(amanhã|amanha)\s+(às|as|a)?\s*\d{1,2}(h|:?\d{2})?/gi,
+      /\s+(hoje)\s+(às|as|a)?\s*\d{1,2}(h|:?\d{2})?/gi,
+      /\s+(segunda|terca|terça|quarta|quinta|sexta|sabado|sábado|domingo)(-feira)?\s+(às|as|a)?\s*\d{1,2}(h|:?\d{2})?/gi,
+      /\s+em\s+\d+\s+(minutos?|horas?|dias?)/gi,
+      /\s+(às|as|a)\s*\d{1,2}(h|:?\d{2})?/gi,
+      /\s+\d{1,2}(h|:?\d{2})/gi,
+    ];
+
+    patterns.forEach(pattern => {
+      text = text.replace(pattern, '');
+    });
+
+    // Clean up extra spaces
+    text = text.trim().replace(/\s+/g, ' ');
+
+    // If text is too short after cleaning, return original
+    if (text.length < 3) {
+      return message;
+    }
+
+    return text;
   }
 
   /**
