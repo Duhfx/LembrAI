@@ -12,6 +12,7 @@
     "db:test": "ts-node src/test-database.ts",
     "test:whatsapp": "ts-node src/test-whatsapp.ts",
     "test:parser": "ts-node src/test-date-parser.ts",
+    "test:ai-parser": "ts-node src/test-ai-parser.ts",
     "test:admin": "ts-node src/test-admin.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

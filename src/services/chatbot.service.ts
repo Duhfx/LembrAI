@@ -5,6 +5,7 @@ import { ReminderService } from './reminder.service';
 import { ParseDateTimePtService } from './parse-datetime-pt.service';
 import { WhatsAppService } from './whatsapp.service';
 import { PlanLimitsService } from './plan-limits.service';
+import { AIReminderParserService } from './ai-reminder-parser.service';
 import { ConversationState, HandlerResponse } from '../models';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class ChatbotService {
     private readonly dateParser: ParseDateTimePtService,
     private readonly whatsapp: WhatsAppService,
     private readonly planLimits: PlanLimitsService,
+    private readonly aiParser: AIReminderParserService,
   ) {
     this.logger.log('✅ ChatbotService initialized');
   }
@@ -103,37 +105,39 @@ export class ChatbotService {
       };
     }
 
-    // Try to extract date/time from the initial message
-    const parsed = this.dateParser.parseDateTime(message);
+    // Try to parse with AI first (falls back to offline if needed)
+    const aiResult = await this.aiParser.parseReminder(message);
 
-    if (parsed.success && parsed.date) {
-      // Validate date is in the future
-      if (this.dateParser.validateDateTime(parsed.date)) {
-        // Extract the reminder text (remove the date/time part)
-        const reminderText = this.extractReminderText(message);
+    this.logger.log(`Parser used: ${aiResult.method} | Confidence: ${aiResult.confidence}`);
 
-        // Store both message and parsed date
-        this.contextService.updateContext(phone, {
-          reminderMessage: reminderText,
-          parsedDateTime: parsed.date,
-        });
+    if (aiResult.dateTime && this.dateParser.validateDateTime(aiResult.dateTime)) {
+      // We have a valid datetime from AI
+      const reminderText = aiResult.cleanedMessage;
 
-        const formattedDate = this.dateParser.formatDate(parsed.date);
+      // Store both message and parsed date
+      this.contextService.updateContext(phone, {
+        reminderMessage: reminderText,
+        parsedDateTime: aiResult.dateTime,
+      });
 
-        return {
-          message: `📝 Entendi! Vou te lembrar sobre:\n"${reminderText}"\n\n✅ Data: ${formattedDate}\n\n⏰ Quanto tempo ANTES você quer ser avisado?\n\nExemplos:\n• 30 minutos antes\n• 1 hora antes\n• 2 horas antes\n• na hora (0 minutos)`,
-          nextState: ConversationState.WAITING_ADVANCE_TIME,
-        };
-      }
+      const formattedDate = this.dateParser.formatDate(aiResult.dateTime);
+
+      return {
+        message: `📝 Entendi! Vou te lembrar sobre:\n"${reminderText}"\n\n✅ Data: ${formattedDate}\n\n⏰ Quanto tempo ANTES você quer ser avisado?\n\nExemplos:\n• 30 minutos antes\n• 1 hora antes\n• 2 horas antes\n• na hora (0 minutos)`,
+        nextState: ConversationState.WAITING_ADVANCE_TIME,
+      };
     }
 
     // If no date found or invalid, ask for it
+    // Use cleaned message from AI if available
+    const reminderMessage = aiResult.cleanedMessage || message;
+
     this.contextService.updateContext(phone, {
-      reminderMessage: message,
+      reminderMessage,
     });
 
     return {
-      message: `📝 Entendi! Vou te lembrar sobre:\n"${message}"\n\n📅 Quando você quer ser lembrado?\n\nExemplos:\n• amanhã às 15h\n• segunda-feira 9h\n• em 2 horas\n• sexta 17h30`,
+      message: `📝 Entendi! Vou te lembrar sobre:\n"${reminderMessage}"\n\n📅 Quando você quer ser lembrado?\n\nExemplos:\n• amanhã às 15h\n• segunda-feira 9h\n• em 2 horas\n• sexta 17h30`,
       nextState: ConversationState.WAITING_DATETIME,
     };
   }
