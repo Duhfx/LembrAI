@@ -22,7 +22,8 @@
       "Bash(test:*)",
       "Bash(npm uninstall:*)",
       "Bash(npm run test:audio:*)",
-      "Bash(npm run test:ai-conversation:*)"
+      "Bash(npm run test:ai-conversation:*)",
+      "Bash(npm run test:date-recognition:*)"
     ],
     "deny": [],
     "ask": []
