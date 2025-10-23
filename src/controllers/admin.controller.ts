@@ -99,6 +99,29 @@ export class AdminController {
   }
 
   /**
+   * Send test chat message
+   * POST /admin/chat/send
+   */
+  @Post('chat/send')
+  async sendTestMessage(
+    @Body('userId') userId: string,
+    @Body('message') message: string,
+  ) {
+    this.logger.log(`💬 Test chat message from user ${userId}: "${message}"`);
+    return await this.adminService.processTestChatMessage(userId, message);
+  }
+
+  /**
+   * Clear test chat context
+   * POST /admin/chat/clear
+   */
+  @Post('chat/clear')
+  async clearTestChat(@Body('userId') userId: string) {
+    this.logger.log(`🗑️  Clearing test chat context for user ${userId}`);
+    return await this.adminService.clearTestChatContext(userId);
+  }
+
+  /**
    * Health check
    * GET /admin/health
    */

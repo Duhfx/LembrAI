@@ -202,7 +202,10 @@
             <p class="subtitle">Painel Administrativo</p>
         </header>
 
-        <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar Dados</button>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar Dados</button>
+            <a href="/admin/chat.html" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">💬 Chat de Teste</a>
+        </div>
 
         <div id="loading" class="loading">
             Carregando dados...

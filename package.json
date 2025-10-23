@@ -16,6 +16,7 @@
     "test:ai-conversation": "ts-node src/test-ai-conversation.ts",
     "test:date-recognition": "ts-node src/test-date-recognition.ts",
     "test:audio": "ts-node src/test-audio-transcription.ts",
+    "test:reminder-query": "ts-node src/test-reminder-query.ts",
     "test:admin": "ts-node src/test-admin.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

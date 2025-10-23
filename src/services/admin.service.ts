@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from './database.service';
+import { ChatbotService } from './chatbot.service';
+import { ConversationContextService } from './conversation-context.service';
 import { ReminderStatus, PlanType, NotificationStatus } from '../../generated/prisma';
 
 export interface DashboardStats {
@@ -31,8 +33,13 @@ export interface DashboardStats {
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
+  private testChatResponses: Map<string, string[]> = new Map();
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly chatbot: ChatbotService,
+    private readonly contextService: ConversationContextService,
+  ) {}
 
   /**
    * Get dashboard statistics
@@ -282,5 +289,122 @@ export class AdminService {
       where: { id: userId },
       data: { planType },
     });
+  }
+
+  /**
+   * Process test chat message (simulates WhatsApp without sending)
+   */
+  async processTestChatMessage(userId: string, message: string) {
+    try {
+      // Get user to get phone number
+      const user = await this.db.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      this.logger.log(`💬 Processing test message for user ${user.phone}: "${message}"`);
+
+      // Store responses in memory to capture them
+      const responses: string[] = [];
+      const originalPhone = user.phone;
+
+      // Create a temporary mock WhatsApp service that captures responses
+      const mockWhatsApp = {
+        sendTextMessage: async (phone: string, text: string) => {
+          this.logger.log(`📤 Mock WhatsApp response: "${text}"`);
+          responses.push(text);
+          return 'mock-message-id';
+        },
+        sendWelcomeMessage: async (phone: string) => {
+          const welcomeText = '👋 Bem-vindo ao LembrAI! (Test Mode)';
+          responses.push(welcomeText);
+          return 'mock-message-id';
+        },
+        sendReminderNotification: async (phone: string, msg: string, date: Date) => {
+          responses.push(`🔔 Lembrete: ${msg}`);
+          return 'mock-message-id';
+        },
+        sendConfirmation: async (phone: string, msg: string, date: Date) => {
+          responses.push(`✅ Confirmação: ${msg}`);
+          return 'mock-message-id';
+        },
+        sendErrorMessage: async (phone: string, errorType: string) => {
+          responses.push(`❌ Erro: ${errorType}`);
+          return 'mock-message-id';
+        },
+      };
+
+      // Temporarily replace WhatsApp service
+      const originalWhatsApp = (this.chatbot as any).whatsapp;
+      (this.chatbot as any).whatsapp = mockWhatsApp;
+
+      try {
+        // Process message through chatbot (same as real WhatsApp flow)
+        await this.chatbot.processMessage(originalPhone, message);
+      } finally {
+        // Restore original WhatsApp service
+        (this.chatbot as any).whatsapp = originalWhatsApp;
+      }
+
+      // Get conversation context
+      const context = this.contextService.getOrCreateContext(originalPhone);
+
+      return {
+        success: true,
+        userMessage: message,
+        botResponses: responses,
+        context: {
+          state: context.state,
+          reminderMessage: context.reminderMessage,
+          parsedDateTime: context.parsedDateTime,
+        },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Error processing test chat: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        userMessage: message,
+        botResponses: ['❌ Erro ao processar mensagem. Veja os logs do servidor.'],
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Clear test chat context
+   */
+  async clearTestChatContext(userId: string) {
+    try {
+      const user = await this.db.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Clear conversation context
+      this.contextService.clearContext(user.phone);
+
+      this.logger.log(`🗑️  Cleared test chat context for user ${user.phone}`);
+
+      return {
+        success: true,
+        message: 'Contexto limpo com sucesso',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ Error clearing test chat context: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      };
+    }
   }
 }

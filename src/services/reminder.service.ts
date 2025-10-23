@@ -105,4 +105,26 @@ export class ReminderService {
       },
     });
   }
+
+  /**
+   * Find reminders for a user within a date range
+   */
+  async findByUserIdAndPeriod(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Reminder[]> {
+    return this.db.reminder.findMany({
+      where: {
+        userId,
+        status: 'PENDING',
+        reminderDatetime: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { reminderDatetime: 'asc' },
+      take: 50, // Limit to 50 reminders to avoid overwhelming the user
+    });
+  }
 }

@@ -10,12 +10,13 @@ export interface ConversationMessage {
 
 export interface AIConversationResult {
   responseMessage: string;
-  action?: 'create_reminder' | 'list_reminders' | 'show_plan' | 'cancel' | 'help' | 'none';
+  action?: 'create_reminder' | 'list_reminders' | 'query_reminders' | 'show_plan' | 'cancel' | 'help' | 'none';
   reminderData?: {
     message: string;
     dateTime?: Date;
     advanceMinutes?: number;
   };
+  queryPeriod?: string;
   needsMoreInfo?: boolean;
 }
 
@@ -115,6 +116,29 @@ COMANDOS ESPECIAIS QUE VOCÊ DEVE RECONHECER:
 - "/cancelar" ou "cancelar" → Cancelar conversa atual
 - "/lembretes" ou "meus lembretes" ou "listar lembretes" → Listar lembretes ativos
 - "/plano" ou "meu plano" ou "ver uso" → Mostrar informações do plano
+
+CONSULTAS DE LEMBRETES (NOVO):
+Quando o usuário perguntar sobre lembretes existentes (não está criando um novo), use a ação "query_reminders".
+
+**Exemplos de consultas:**
+- "Quais meus compromissos hoje?"
+- "O que tenho amanhã?"
+- "Me mostra o que tenho essa semana"
+- "Tenho algo na segunda?"
+- "Quais lembretes para outubro?"
+- "O que tenho nos próximos 3 dias?"
+
+**Como identificar consulta vs criação:**
+- CONSULTA: Usuário pergunta sobre lembretes já existentes
+- CRIAÇÃO: Usuário quer criar um novo lembrete
+
+**Formato para consultas:**
+{
+  "responseMessage": "Vou verificar seus lembretes para [período]...",
+  "action": "query_reminders",
+  "queryPeriod": "período em texto (ex: hoje, amanhã, esta semana, próximos 3 dias)",
+  "needsMoreInfo": false
+}
 
 REGRAS PARA CRIAR LEMBRETES:
 
@@ -310,6 +334,7 @@ IMPORTANTE:
           dateTime,
           advanceMinutes: parsed.reminderData.advanceMinutes,
         } : undefined,
+        queryPeriod: parsed.queryPeriod,
         needsMoreInfo: parsed.needsMoreInfo !== false,
       };
     } catch (error: any) {

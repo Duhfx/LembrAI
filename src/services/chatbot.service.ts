@@ -6,6 +6,7 @@ import { ParseDateTimePtService } from './parse-datetime-pt.service';
 import { WhatsAppService } from './whatsapp.service';
 import { PlanLimitsService } from './plan-limits.service';
 import { GeminiConversationService, ConversationMessage } from './gemini-conversation.service';
+import { ReminderQueryService } from './reminder-query.service';
 import { ConversationState } from '../models';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class ChatbotService {
     private readonly whatsapp: WhatsAppService,
     private readonly planLimits: PlanLimitsService,
     private readonly aiConversation: GeminiConversationService,
+    private readonly reminderQuery: ReminderQueryService,
   ) {
     this.logger.log('✅ ChatbotService initialized with AI conversation');
   }
@@ -106,6 +108,10 @@ export class ChatbotService {
 
       case 'list_reminders':
         await this.listReminders(phone);
+        break;
+
+      case 'query_reminders':
+        await this.queryReminders(phone, aiResult.queryPeriod || 'hoje');
         break;
 
       case 'show_plan':
@@ -286,6 +292,33 @@ export class ChatbotService {
     });
 
     await this.whatsapp.sendTextMessage(phone, message);
+  }
+
+  /**
+   * Query reminders for a specific period
+   */
+  private async queryReminders(phone: string, period: string): Promise<void> {
+    const user = await this.userService.findByPhone(phone);
+    if (!user) {
+      await this.whatsapp.sendTextMessage(phone, 'Você ainda não tem lembretes.');
+      return;
+    }
+
+    this.logger.log(`🔍 Querying reminders for user ${user.id}, period: ${period}`);
+
+    // Parse period into date range
+    const { startDate, endDate, label } = this.reminderQuery.parsePeriod(period);
+
+    // Query reminders
+    const reminders = await this.reminderService.findByUserIdAndPeriod(
+      user.id,
+      startDate,
+      endDate,
+    );
+
+    // Format and send response
+    const formattedMessage = this.reminderQuery.formatRemindersList(reminders, label);
+    await this.whatsapp.sendTextMessage(phone, formattedMessage);
   }
 
   /**
