@@ -34,8 +34,16 @@ export class ReminderService {
   }
 
   async findByUserId(userId: string): Promise<Reminder[]> {
+    const now = new Date();
+
     return this.db.reminder.findMany({
-      where: { userId },
+      where: {
+        userId,
+        status: 'PENDING',
+        reminderDatetime: {
+          gte: now,
+        },
+      },
       orderBy: { reminderDatetime: 'asc' },
     });
   }

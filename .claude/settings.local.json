@@ -34,7 +34,8 @@
       "Bash(npm run test:whatsapp:*)",
       "WebSearch",
       "WebFetch(domain:www.twilio.com)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

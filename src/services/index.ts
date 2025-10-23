@@ -15,4 +15,5 @@ export * from './reminder-scheduler.service';
 export * from './admin.service';
 export * from './plan-limits.service';
 export * from './reminder-query.service';
+export * from './reminder-matcher.service';
 export * from './logger.service';

@@ -7,6 +7,7 @@ import { WhatsAppService } from './whatsapp.service';
 import { PlanLimitsService } from './plan-limits.service';
 import { GeminiConversationService, ConversationMessage } from './gemini-conversation.service';
 import { ReminderQueryService } from './reminder-query.service';
+import { ReminderMatcherService } from './reminder-matcher.service';
 import { ConversationState } from '../models';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class ChatbotService {
     private readonly planLimits: PlanLimitsService,
     private readonly aiConversation: GeminiConversationService,
     private readonly reminderQuery: ReminderQueryService,
+    private readonly reminderMatcher: ReminderMatcherService,
   ) {
     this.logger.log('✅ ChatbotService initialized with AI conversation');
   }
@@ -391,17 +393,34 @@ export class ChatbotService {
       return;
     }
 
-    this.logger.log(`🗑️ Searching reminders with keyword: "${keyword}"`);
+    this.logger.log(`🗑️ Matching reminders with AI for keyword: "${keyword}"`);
 
-    const reminders = await this.reminderService.searchByKeyword(context.userId, keyword);
+    // Get all pending reminders
+    const allReminders = await this.reminderService.findPendingByUserId(context.userId);
 
-    if (reminders.length === 0) {
+    if (allReminders.length === 0) {
       await this.whatsapp.sendTextMessage(
         phone,
-        `❌ Não encontrei nenhum lembrete com "${keyword}".\n\nDigite /lembretes para ver todos os seus lembretes ativos.`,
+        '📭 Você não tem lembretes ativos para cancelar.',
       );
       return;
     }
+
+    // Use AI to match reminders
+    const matchResult = await this.reminderMatcher.matchReminders(allReminders, keyword);
+    const matchedReminders = allReminders.filter(r =>
+      matchResult.matchedReminderIds.includes(r.id)
+    );
+
+    if (matchedReminders.length === 0) {
+      await this.whatsapp.sendTextMessage(
+        phone,
+        `❌ Não encontrei nenhum lembrete relacionado a "${keyword}".\n\nDigite /lembretes para ver todos os seus lembretes ativos.`,
+      );
+      return;
+    }
+
+    const reminders = matchedReminders;
 
     if (reminders.length === 1) {
       // Only one match - ask for confirmation
