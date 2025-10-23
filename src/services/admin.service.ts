@@ -323,6 +323,12 @@ export class AdminService {
           responses.push(welcomeText);
           return 'mock-message-id';
         },
+        sendFirstContactWelcome: async (phone: string) => {
+          const welcomeText = '👋 Bem-vindo ao LembrAI! Eu sou seu assistente inteligente de lembretes. (Test Mode - First Contact)';
+          this.logger.log(`📤 Mock first contact welcome`);
+          responses.push(welcomeText);
+          return 'mock-message-id';
+        },
         sendReminderNotification: async (phone: string, msg: string, date: Date) => {
           responses.push(`🔔 Lembrete: ${msg}`);
           return 'mock-message-id';
