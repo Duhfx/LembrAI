@@ -47,7 +47,7 @@ export class AudioTranscriptionService {
       this.logger.log(`🎤 Transcribing audio (${mimeType}, ${audioBuffer.length} bytes)`);
 
       // Gemini supports audio files through File API
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-thinking-exp-01-21' });
 
       // Convert buffer to base64
       const base64Audio = audioBuffer.toString('base64');
