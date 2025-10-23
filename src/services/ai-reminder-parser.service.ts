@@ -46,7 +46,7 @@ export class AIReminderParserService {
     try {
       this.logger.log(`🤖 Parsing with AI: "${userMessage}"`);
 
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-thinking-exp-01-21' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
       const prompt = this.buildPrompt(userMessage);
       const result = await model.generateContent(prompt);

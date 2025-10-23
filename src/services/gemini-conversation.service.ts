@@ -58,7 +58,7 @@ export class GeminiConversationService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-thinking-exp-01-21' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
       const prompt = this.buildConversationPrompt(userMessage, conversationHistory, userContext);
       const result = await model.generateContent(prompt);
