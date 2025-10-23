@@ -41,11 +41,15 @@ export class ReminderService {
   }
 
   async findPendingReminders(): Promise<Reminder[]> {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes buffer
+
     return this.db.reminder.findMany({
       where: {
         status: 'PENDING',
         reminderDatetime: {
-          lte: new Date(),
+          gte: fiveMinutesAgo, // Only get reminders from last 5 minutes
+          lte: now,
         },
       },
       include: {

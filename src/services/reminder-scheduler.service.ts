@@ -82,6 +82,16 @@ export class ReminderSchedulerService implements OnModuleInit {
     try {
       this.logger.log(`📤 Processing reminder ${reminder.id}: "${reminder.message}"`);
 
+      // CRITICAL: Mark as SENT immediately to prevent duplicate processing
+      // This prevents race conditions when cron runs again before this completes
+      try {
+        await this.reminderService.updateStatus(reminder.id, 'SENT');
+      } catch (updateError: any) {
+        // If update fails, reminder might have already been processed
+        this.logger.warn(`Could not update reminder ${reminder.id} status - possibly already processed`);
+        return;
+      }
+
       // Get user info
       const user = reminder.user || await this.userService.findById(reminder.userId);
 
@@ -105,9 +115,8 @@ export class ReminderSchedulerService implements OnModuleInit {
           reminder.originalDatetime,
         );
 
-        // Mark as sent
+        // Mark notification as sent
         await this.notificationService.updateStatus(notification.id, 'SENT');
-        await this.reminderService.updateStatus(reminder.id, 'SENT');
 
         this.logger.log(`✅ Reminder ${reminder.id} sent successfully to ${user.phone}`);
       } catch (error: any) {
@@ -116,12 +125,17 @@ export class ReminderSchedulerService implements OnModuleInit {
         // Mark notification as failed
         await this.notificationService.updateStatus(notification.id, 'FAILED', error.message);
 
-        // Check retry count - for now, mark as failed after first attempt
-        // TODO: Implement retry logic with exponential backoff
+        // Mark reminder as failed since we couldn't send
         await this.reminderService.updateStatus(reminder.id, 'FAILED');
       }
     } catch (error: any) {
       this.logger.error(`Error processing reminder ${reminder.id}: ${error.message}`, error.stack);
+      // Try to mark as failed
+      try {
+        await this.reminderService.updateStatus(reminder.id, 'FAILED');
+      } catch {
+        // Ignore error if we can't update status
+      }
     }
   }
 
