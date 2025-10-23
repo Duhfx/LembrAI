@@ -6,6 +6,8 @@ export enum ConversationState {
   WAITING_DATETIME = 'WAITING_DATETIME',
   WAITING_ADVANCE_TIME = 'WAITING_ADVANCE_TIME',
   CONFIRMING = 'CONFIRMING',
+  CONFIRMING_DELETE = 'CONFIRMING_DELETE',
+  SELECTING_REMINDER_TO_DELETE = 'SELECTING_REMINDER_TO_DELETE',
 }
 
 /**
@@ -15,6 +17,15 @@ export interface ConversationMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+}
+
+/**
+ * Reminder to delete (for selection)
+ */
+export interface ReminderOption {
+  id: string;
+  message: string;
+  datetime: Date;
 }
 
 /**
@@ -28,6 +39,10 @@ export interface ConversationContext {
   parsedDateTime?: Date;
   advanceMinutes?: number;
   messageHistory?: ConversationMessage[];
+  // Delete reminder context
+  pendingDeleteReminderId?: string;
+  deleteReminderOptions?: ReminderOption[];
+  deleteKeyword?: string;
   createdAt: Date;
   updatedAt: Date;
 }

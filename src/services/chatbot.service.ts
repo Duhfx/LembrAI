@@ -27,11 +27,19 @@ export class ChatbotService {
   }
 
   /**
+   * Store current message for handler access
+   */
+  private currentMessage: Map<string, string> = new Map();
+
+  /**
    * Process incoming message with AI-powered conversation
    */
   async processMessage(phone: string, message: string, isFromAudio: boolean = false): Promise<void> {
     const logPrefix = isFromAudio ? '🎤' : '📨';
     this.logger.log(`${logPrefix} Processing message from ${phone}: "${message}"`);
+
+    // Store message for handlers
+    this.currentMessage.set(phone, message);
 
     // Get or create context
     const context = this.contextService.getOrCreateContext(phone);
@@ -39,12 +47,29 @@ export class ChatbotService {
     // Ensure user exists
     if (!context.userId) {
       let user = await this.userService.findByPhone(phone);
+      let isNewUser = false;
+
       if (!user) {
         user = await this.userService.create(phone);
+        isNewUser = true;
         this.logger.log(`Created new user: ${user.id}`);
       }
+
       this.contextService.updateContext(phone, { userId: user.id });
       context.userId = user.id;
+
+      // Send welcome message to new users (only once)
+      if (!user.firstContactSent) {
+        this.logger.log(`📩 Sending first contact welcome to ${phone}`);
+        await this.whatsapp.sendFirstContactWelcome(phone);
+        await this.userService.markFirstContactSent(user.id);
+
+        // If user sent a message (not just connected), continue processing
+        // Otherwise, just return after welcome
+        if (!message.trim()) {
+          return;
+        }
+      }
     }
 
     // Handle special commands
@@ -101,6 +126,19 @@ export class ChatbotService {
   private async handleAIAction(phone: string, aiResult: any): Promise<void> {
     const context = this.contextService.getOrCreateContext(phone);
 
+    // Check if we're in a delete confirmation state
+    if (context.state === ConversationState.CONFIRMING_DELETE) {
+      const userMessage = this.currentMessage.get(phone) || '';
+      await this.handleDeleteConfirmation(phone, userMessage);
+      return;
+    }
+
+    if (context.state === ConversationState.SELECTING_REMINDER_TO_DELETE) {
+      const userMessage = this.currentMessage.get(phone) || '';
+      await this.handleDeleteSelection(phone, userMessage);
+      return;
+    }
+
     switch (aiResult.action) {
       case 'create_reminder':
         await this.createReminderFromAI(phone, aiResult);
@@ -116,6 +154,10 @@ export class ChatbotService {
 
       case 'show_plan':
         await this.showPlanUsage(phone);
+        break;
+
+      case 'delete_reminder':
+        await this.handleDeleteReminder(phone, aiResult.reminderKeyword || '');
         break;
 
       case 'cancel':
@@ -333,5 +375,170 @@ export class ChatbotService {
 
     const usageMessage = await this.planLimits.formatUsageMessage(user.id);
     await this.whatsapp.sendTextMessage(phone, usageMessage);
+  }
+
+  /**
+   * Handle delete reminder request
+   */
+  private async handleDeleteReminder(phone: string, keyword: string): Promise<void> {
+    const context = this.contextService.getOrCreateContext(phone);
+
+    if (!keyword || keyword.trim().length === 0) {
+      await this.whatsapp.sendTextMessage(
+        phone,
+        '❓ Qual lembrete você quer cancelar? Me diga uma palavra-chave.\nOu digite /lembretes para ver todos.',
+      );
+      return;
+    }
+
+    this.logger.log(`🗑️ Searching reminders with keyword: "${keyword}"`);
+
+    const reminders = await this.reminderService.searchByKeyword(context.userId, keyword);
+
+    if (reminders.length === 0) {
+      await this.whatsapp.sendTextMessage(
+        phone,
+        `❌ Não encontrei nenhum lembrete com "${keyword}".\n\nDigite /lembretes para ver todos os seus lembretes ativos.`,
+      );
+      return;
+    }
+
+    if (reminders.length === 1) {
+      // Only one match - ask for confirmation
+      const reminder = reminders[0];
+      const dateFormatted = this.dateParser.formatDate(reminder.reminderDatetime);
+
+      this.contextService.updateContext(phone, {
+        state: ConversationState.CONFIRMING_DELETE,
+        pendingDeleteReminderId: reminder.id,
+        deleteKeyword: keyword,
+      });
+
+      await this.whatsapp.sendTextMessage(
+        phone,
+        `🗑️ Você quer cancelar este lembrete?\n\n📝 ${reminder.message}\n🔔 ${dateFormatted}\n\nResponda *sim* para confirmar ou *não* para manter.`,
+      );
+    } else {
+      // Multiple matches - show list
+      let message = `Encontrei ${reminders.length} lembretes com "${keyword}":\n\n`;
+
+      const options = reminders.map((reminder, index) => {
+        const dateFormatted = this.dateParser.formatDate(reminder.reminderDatetime);
+        message += `${index + 1}️⃣ ${reminder.message}\n   🔔 ${dateFormatted}\n\n`;
+        return {
+          id: reminder.id,
+          message: reminder.message,
+          datetime: reminder.reminderDatetime,
+        };
+      });
+
+      message += `Qual você quer cancelar? Responda com o número (ex: *1*).`;
+
+      this.contextService.updateContext(phone, {
+        state: ConversationState.SELECTING_REMINDER_TO_DELETE,
+        deleteReminderOptions: options,
+        deleteKeyword: keyword,
+      });
+
+      await this.whatsapp.sendTextMessage(phone, message);
+    }
+  }
+
+  /**
+   * Handle delete confirmation (yes/no)
+   */
+  private async handleDeleteConfirmation(phone: string, message: string): Promise<void> {
+    const context = this.contextService.getOrCreateContext(phone);
+    const normalized = message.toLowerCase().trim();
+
+    if (normalized === 'sim' || normalized === 's' || normalized === 'confirmar') {
+      // User confirmed - delete reminder
+      if (!context.pendingDeleteReminderId) {
+        await this.whatsapp.sendTextMessage(phone, '❌ Erro: Lembrete não encontrado.');
+        this.contextService.clearContext(phone);
+        return;
+      }
+
+      try {
+        const reminder = await this.reminderService.findById(context.pendingDeleteReminderId);
+        if (!reminder) {
+          await this.whatsapp.sendTextMessage(phone, '❌ Lembrete não encontrado.');
+          this.contextService.clearContext(phone);
+          return;
+        }
+
+        await this.reminderService.cancelReminder(context.pendingDeleteReminderId);
+        this.logger.log(`✅ Reminder cancelled: ${context.pendingDeleteReminderId}`);
+
+        await this.whatsapp.sendTextMessage(
+          phone,
+          `✅ *Lembrete cancelado com sucesso!*\n\n📝 ${reminder.message}`,
+        );
+
+        this.contextService.clearContext(phone);
+      } catch (error: any) {
+        this.logger.error(`Error cancelling reminder: ${error.message}`);
+        await this.whatsapp.sendTextMessage(
+          phone,
+          '❌ Erro ao cancelar lembrete. Tente novamente mais tarde.',
+        );
+        this.contextService.clearContext(phone);
+      }
+    } else if (normalized === 'não' || normalized === 'nao' || normalized === 'n' || normalized === 'cancelar') {
+      // User cancelled
+      await this.whatsapp.sendTextMessage(
+        phone,
+        '👍 Ok, lembrete mantido. Envie outra mensagem quando precisar!',
+      );
+      this.contextService.clearContext(phone);
+    } else {
+      // Invalid response
+      await this.whatsapp.sendTextMessage(
+        phone,
+        '❓ Não entendi. Responda *sim* para cancelar o lembrete ou *não* para manter.',
+      );
+    }
+  }
+
+  /**
+   * Handle selection from list of reminders
+   */
+  private async handleDeleteSelection(phone: string, message: string): Promise<void> {
+    const context = this.contextService.getOrCreateContext(phone);
+    const normalized = message.trim();
+
+    // Check if it's a number
+    const selection = parseInt(normalized);
+    if (isNaN(selection) || selection < 1 || !context.deleteReminderOptions) {
+      await this.whatsapp.sendTextMessage(
+        phone,
+        '❓ Por favor, responda com o número do lembrete que deseja cancelar (ex: *1*).',
+      );
+      return;
+    }
+
+    const selectedIndex = selection - 1;
+    if (selectedIndex >= context.deleteReminderOptions.length) {
+      await this.whatsapp.sendTextMessage(
+        phone,
+        `❓ Número inválido. Escolha entre 1 e ${context.deleteReminderOptions.length}.`,
+      );
+      return;
+    }
+
+    const selectedReminder = context.deleteReminderOptions[selectedIndex];
+    const dateFormatted = this.dateParser.formatDate(selectedReminder.datetime);
+
+    // Move to confirmation state
+    this.contextService.updateContext(phone, {
+      state: ConversationState.CONFIRMING_DELETE,
+      pendingDeleteReminderId: selectedReminder.id,
+      deleteReminderOptions: undefined,
+    });
+
+    await this.whatsapp.sendTextMessage(
+      phone,
+      `🗑️ Confirma cancelamento de:\n\n📝 ${selectedReminder.message}\n🔔 ${dateFormatted}\n\nResponda *sim* ou *não*.`,
+    );
   }
 }

@@ -131,4 +131,47 @@ export class ReminderService {
       take: 50, // Limit to 50 reminders to avoid overwhelming the user
     });
   }
+
+  /**
+   * Search pending reminders by keyword
+   */
+  async searchByKeyword(userId: string, keyword: string): Promise<Reminder[]> {
+    const normalizedKeyword = keyword.toLowerCase().trim();
+
+    const reminders = await this.db.reminder.findMany({
+      where: {
+        userId,
+        status: 'PENDING',
+      },
+      orderBy: { reminderDatetime: 'asc' },
+    });
+
+    // Filter by keyword similarity (case-insensitive)
+    return reminders.filter(reminder =>
+      reminder.message.toLowerCase().includes(normalizedKeyword)
+    );
+  }
+
+  /**
+   * Find only pending reminders for a user
+   */
+  async findPendingByUserId(userId: string): Promise<Reminder[]> {
+    return this.db.reminder.findMany({
+      where: {
+        userId,
+        status: 'PENDING',
+      },
+      orderBy: { reminderDatetime: 'asc' },
+    });
+  }
+
+  /**
+   * Cancel a reminder (update status to CANCELLED)
+   */
+  async cancelReminder(id: string): Promise<Reminder> {
+    return this.db.reminder.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+  }
 }

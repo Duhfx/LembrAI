@@ -23,7 +23,18 @@
       "Bash(npm uninstall:*)",
       "Bash(npm run test:audio:*)",
       "Bash(npm run test:ai-conversation:*)",
-      "Bash(npm run test:date-recognition:*)"
+      "Bash(npm run test:date-recognition:*)",
+      "Bash(if [ -f .env ])",
+      "Bash(then echo \"exists\")",
+      "Bash(else echo \"not_exists\")",
+      "Bash(fi)",
+      "Bash(npm run test:meta-api:*)",
+      "Bash(git restore:*)",
+      "Bash(npm run test:reminder-query:*)",
+      "Bash(npm run test:whatsapp:*)",
+      "WebSearch",
+      "WebFetch(domain:www.twilio.com)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []

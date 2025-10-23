@@ -70,6 +70,15 @@ export class WhatsAppService {
   }
 
   /**
+   * Send first contact welcome message with full introduction
+   */
+  async sendFirstContactWelcome(to: string): Promise<string> {
+    const message = `👋 *Bem-vindo ao LembrAI!*\n\nOlá! Eu sou o LembrAI, seu assistente inteligente de lembretes via WhatsApp. 🤖\n\n✨ *Sobre mim:*\nUso inteligência artificial para entender você de forma natural. Pode falar comigo como falaria com um amigo!\n\n💡 *Como funciona:*\nSimples! Me diga o que quer lembrar e quando. Eu entendo frases como:\n• "Me lembre de comprar leite amanhã às 15h"\n• "Reunião com cliente sexta-feira 14h"\n• Ou até áudio! 🎤\n\n📋 *Comandos úteis:*\n• /lembretes - Ver seus lembretes ativos\n• /plano - Consultar seu plano e uso\n• /cancelar - Cancelar conversa atual\n• /ajuda - Ver instruções detalhadas\n\n🚀 *Exemplo prático:*\nVocê: "Lembrar de ligar para o médico amanhã às 10h"\nEu: Entendo, crio o lembrete e te aviso no horário!\n\nVamos começar? Me diga seu primeiro lembrete! 😊`;
+
+    return this.sendTextMessage(to, message);
+  }
+
+  /**
    * Send confirmation message
    */
   async sendConfirmation(

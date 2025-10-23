@@ -42,6 +42,7 @@ model User {
   email      String?
   planType   PlanType   @default(FREE) @map("plan_type")
   planExpiresAt DateTime? @map("plan_expires_at")
+  firstContactSent Boolean @default(false) @map("first_contact_sent")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 

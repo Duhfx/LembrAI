@@ -53,4 +53,11 @@ export class UserService {
       },
     });
   }
+
+  async markFirstContactSent(userId: string): Promise<User> {
+    return this.db.user.update({
+      where: { id: userId },
+      data: { firstContactSent: true },
+    });
+  }
 }
