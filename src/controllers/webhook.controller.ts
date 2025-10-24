@@ -105,12 +105,19 @@ export class WebhookController {
 
         this.logger.log(`✅ Audio transcribed: "${transcription.text}"`);
 
+        // Small delay to ensure WhatsApp registers the conversation session
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
         // Process transcribed text
         await this.chatbotService.processMessage(phoneNumber, transcription.text, true);
       } else {
         // Regular text message
         const message = body.Body?.trim() || '';
         this.logger.log(`Message from ${phoneNumber}: "${message}"`);
+
+        // Small delay to ensure WhatsApp registers the conversation session
+        // This prevents "outside allowed window" errors on immediate responses
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         // Process message through chatbot
         await this.chatbotService.processMessage(phoneNumber, message);
