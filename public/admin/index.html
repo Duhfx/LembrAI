@@ -184,6 +184,31 @@
             background: #5568d3;
         }
 
+        .refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .updating {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
         .timestamp {
             font-size: 0.85em;
             color: #999;
@@ -203,7 +228,7 @@
         </header>
 
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar Dados</button>
+            <button class="refresh-btn" onclick="loadDashboard(true)">🔄 Atualizar Dados</button>
             <a href="/admin/chat.html" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">💬 Chat de Teste</a>
         </div>
 
@@ -304,83 +329,156 @@
 
     <script>
         const API_BASE = '/admin';
+        let isUpdating = false;
+        let lastUpdateTime = null;
 
-        async function loadDashboard() {
+        async function loadDashboard(isManualRefresh = false) {
+            if (isUpdating) return;
+
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const dashboard = document.getElementById('dashboard');
+            const refreshBtn = document.querySelector('.refresh-btn');
 
-            loading.style.display = 'block';
-            error.style.display = 'none';
-            dashboard.style.display = 'none';
+            // First load: show loading screen
+            if (!lastUpdateTime) {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                dashboard.style.display = 'none';
+            } else {
+                // Subsequent updates: just indicate updating
+                isUpdating = true;
+                if (refreshBtn) {
+                    refreshBtn.disabled = true;
+                    refreshBtn.textContent = '⏳ Atualizando...';
+                }
+            }
 
             try {
-                const response = await fetch(`${API_BASE}/stats`);
-                if (!response.ok) throw new Error('Failed to load data');
+                const response = await fetch(`${API_BASE}/stats`, {
+                    credentials: 'include',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Sessão expirada. Recarregue a página para fazer login novamente.');
+                    }
+                    throw new Error('Falha ao carregar dados');
+                }
 
                 const data = await response.json();
 
-                // Update statistics
-                document.getElementById('total-users').textContent = data.users.total;
-                document.getElementById('free-users').textContent = data.users.free;
-                document.getElementById('paid-users').textContent = data.users.paid;
+                // Update statistics with smooth transition
+                updateElement('total-users', data.users.total);
+                updateElement('free-users', data.users.free);
+                updateElement('paid-users', data.users.paid);
 
-                document.getElementById('total-reminders').textContent = data.reminders.total;
-                document.getElementById('pending-reminders').textContent = data.reminders.pending;
-                document.getElementById('sent-reminders').textContent = data.reminders.sent;
-                document.getElementById('failed-reminders').textContent = data.reminders.failed;
+                updateElement('total-reminders', data.reminders.total);
+                updateElement('pending-reminders', data.reminders.pending);
+                updateElement('sent-reminders', data.reminders.sent);
+                updateElement('failed-reminders', data.reminders.failed);
 
-                document.getElementById('total-notifications').textContent = data.notifications.total;
-                document.getElementById('sent-notifications').textContent = data.notifications.sent;
-                document.getElementById('failed-notifications').textContent = data.notifications.failed;
+                updateElement('total-notifications', data.notifications.total);
+                updateElement('sent-notifications', data.notifications.sent);
+                updateElement('failed-notifications', data.notifications.failed);
 
-                // Update recent users
-                const usersTable = document.getElementById('recent-users');
-                usersTable.innerHTML = data.recentActivity.recentUsers.map(user => `
-                    <tr>
+                // Update tables
+                updateTable('recent-users', data.recentActivity.recentUsers.map(user => `
+                    <tr class="fade-in">
                         <td><span class="phone">${user.phone}</span></td>
                         <td><span class="badge badge-${user.planType.toLowerCase()}">${user.planType}</span></td>
                         <td><span class="timestamp">${new Date(user.createdAt).toLocaleString('pt-BR')}</span></td>
                     </tr>
-                `).join('');
+                `).join(''));
 
-                // Update recent reminders
-                const remindersTable = document.getElementById('recent-reminders');
-                remindersTable.innerHTML = data.recentActivity.recentReminders.map(reminder => `
-                    <tr>
+                updateTable('recent-reminders', data.recentActivity.recentReminders.map(reminder => `
+                    <tr class="fade-in">
                         <td><span class="phone">${reminder.user.phone}</span></td>
-                        <td>${reminder.message.substring(0, 50)}${reminder.message.length > 50 ? '...' : ''}</td>
+                        <td>${escapeHtml(reminder.message.substring(0, 50))}${reminder.message.length > 50 ? '...' : ''}</td>
                         <td><span class="timestamp">${new Date(reminder.reminderDatetime).toLocaleString('pt-BR')}</span></td>
                         <td><span class="badge badge-${reminder.status.toLowerCase()}">${reminder.status}</span></td>
                     </tr>
-                `).join('');
+                `).join(''));
 
-                // Update recent notifications
-                const notificationsTable = document.getElementById('recent-notifications');
-                notificationsTable.innerHTML = data.recentActivity.recentNotifications.map(notification => `
-                    <tr>
+                updateTable('recent-notifications', data.recentActivity.recentNotifications.map(notification => `
+                    <tr class="fade-in">
                         <td><span class="phone">${notification.reminder.user.phone}</span></td>
-                        <td>${notification.reminder.message.substring(0, 40)}${notification.reminder.message.length > 40 ? '...' : ''}</td>
+                        <td>${escapeHtml(notification.reminder.message.substring(0, 40))}${notification.reminder.message.length > 40 ? '...' : ''}</td>
                         <td><span class="badge">${notification.type}</span></td>
                         <td><span class="badge badge-${notification.status.toLowerCase()}">${notification.status}</span></td>
                         <td><span class="timestamp">${new Date(notification.createdAt).toLocaleString('pt-BR')}</span></td>
                     </tr>
-                `).join('');
+                `).join(''));
 
-                loading.style.display = 'none';
-                dashboard.style.display = 'block';
+                // Show dashboard if first load
+                if (!lastUpdateTime) {
+                    loading.style.display = 'none';
+                    dashboard.style.display = 'block';
+                }
+
+                lastUpdateTime = Date.now();
+                error.style.display = 'none';
+
+                // Show success message on manual refresh
+                if (isManualRefresh && refreshBtn) {
+                    refreshBtn.textContent = '✅ Atualizado!';
+                    setTimeout(() => {
+                        refreshBtn.textContent = '🔄 Atualizar Dados';
+                    }, 2000);
+                }
+
             } catch (err) {
-                loading.style.display = 'none';
+                console.error('Error loading dashboard:', err);
+
+                if (!lastUpdateTime) {
+                    // First load failed
+                    loading.style.display = 'none';
+                    dashboard.style.display = 'none';
+                }
+
                 error.style.display = 'block';
                 error.textContent = `❌ Erro ao carregar dados: ${err.message}`;
+            } finally {
+                isUpdating = false;
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    if (!isManualRefresh) {
+                        refreshBtn.textContent = '🔄 Atualizar Dados';
+                    }
+                }
             }
+        }
+
+        function updateElement(id, value) {
+            const element = document.getElementById(id);
+            if (element && element.textContent !== String(value)) {
+                element.classList.add('fade-in');
+                element.textContent = value;
+                setTimeout(() => element.classList.remove('fade-in'), 300);
+            }
+        }
+
+        function updateTable(id, html) {
+            const table = document.getElementById(id);
+            if (table) {
+                table.innerHTML = html;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Load dashboard on page load
         loadDashboard();
 
         // Auto-refresh every 30 seconds
-        setInterval(loadDashboard, 30000);
+        setInterval(() => loadDashboard(false), 30000);
     </script>
 </body>
 </html>

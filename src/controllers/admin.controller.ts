@@ -1,12 +1,14 @@
 import { Controller, Get, Post, Delete, Param, Query, Body, UseGuards, Logger } from '@nestjs/common';
 import { AdminService } from '../services/admin.service';
 import { ReminderStatus, PlanType } from '../../generated/prisma';
+import { AdminAuthGuard } from '../guards/admin-auth.guard';
 
 /**
- * Simple authentication guard for admin panel
- * In production, implement proper authentication (JWT, sessions, etc.)
+ * Admin panel controller with HTTP Basic authentication
+ * Credentials configured via ADMIN_USERNAME and ADMIN_PASSWORD env vars
  */
 @Controller('admin')
+@UseGuards(AdminAuthGuard)
 export class AdminController {
   private readonly logger = new Logger(AdminController.name);
 
