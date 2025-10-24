@@ -15,6 +15,10 @@ export const envConfig = {
     accountSid: process.env.TWILIO_ACCOUNT_SID || '',
     authToken: process.env.TWILIO_AUTH_TOKEN || '',
     whatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER || '',
+    templates: {
+      reminder: process.env.WHATSAPP_TEMPLATE_REMINDER || 'lembrete_notificacao_2',
+      welcome: process.env.WHATSAPP_TEMPLATE_WELCOME || 'boas_vindas',
+    },
   },
 
   ai: {
