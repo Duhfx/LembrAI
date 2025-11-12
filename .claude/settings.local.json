@@ -35,7 +35,14 @@
       "WebSearch",
       "WebFetch(domain:www.twilio.com)",
       "Bash(npx ts-node:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npm run test:admin:*)",
+      "Bash(then grep -E \"^ADMIN_\" .env)",
+      "Bash(else echo \".env not found\")",
+      "Bash(npx tsc:*)",
+      "Bash(python -m http.server:*)",
+      "Bash(timeout 3 curl:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []

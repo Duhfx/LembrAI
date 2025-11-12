@@ -191,7 +191,7 @@ The app is designed for platforms like Render.com:
 - Static files (admin panel) are served from `public/` directory
 - **GEMINI_API_KEY is required** for AI parsing and audio transcription
 - SEMPRE faça testes do que for implementado
-- Faça commit e push no git SOMENTE quando eu pedir
+- Faça commit e push no git SOMENTE quando eu pedir. Não considere para todas as mensagens que vem depois
 
 ## AI-Powered Features
 
