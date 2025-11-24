@@ -1,17 +1,11 @@
-import { Controller, Get, Redirect } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 
 /**
- * Root controller - redirects to admin panel
+ * Root controller - serves static files from public directory
+ * The landing page (index.html) is served at / by ServeStaticModule
+ * Admin panel is accessible at /admin/
  */
 @Controller()
 export class AppController {
-  /**
-   * Redirect root path to admin panel
-   * GET / → Redirect to /admin/
-   */
-  @Get()
-  @Redirect('/admin/', 302)
-  redirectToAdmin() {
-    return;
-  }
+  // No routes defined - static files are served by ServeStaticModule
 }
