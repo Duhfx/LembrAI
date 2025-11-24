@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGPD - Lei Geral de Proteção de Dados - Carreiro Consultoria Lembretes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066FF;
+            --secondary: #7C3AED;
+            --accent: #10B981;
+            --dark: #1F2937;
+            --gray: #6B7280;
+            --light: #F9FAFB;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.8;
+            color: var(--dark);
+            background: var(--light);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 20px rgba(0, 102, 255, 0.3);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .update-date {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--dark);
+            font-size: 24px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--gray);
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+            color: var(--gray);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: var(--dark);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 30px;
+            transition: opacity 0.3s;
+        }
+
+        .back-button:hover {
+            opacity: 0.7;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.05), rgba(124, 58, 237, 0.05));
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .rights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .right-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .right-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 102, 255, 0.1);
+        }
+
+        .right-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .right-card p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .contact-box h3 {
+            color: white;
+            margin: 0 0 15px 0;
+        }
+
+        .contact-box p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 10px 0;
+        }
+
+        .contact-box a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .contact-box a:hover {
+            border-bottom-color: white;
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .content {
+                padding: 25px;
+            }
+
+            .rights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">
+                <i class="fas fa-brain"></i>
+                Carreiro Consultoria Lembretes
+            </a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para o site
+            </a>
+
+            <h1>LGPD - Lei Geral de Proteção de Dados</h1>
+            <p class="update-date">Última atualização: 24 de janeiro de 2025</p>
+
+            <div class="highlight-box">
+                <p><strong>Compromisso com a LGPD:</strong> A Carreiro Consultoria está totalmente comprometida com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018). Esta página explica como cumprimos a LGPD e quais são seus direitos como titular de dados.</p>
+            </div>
+
+            <h2>1. O Que é a LGPD?</h2>
+
+            <p>A <strong>Lei Geral de Proteção de Dados (LGPD)</strong> é a legislação brasileira que regula o tratamento de dados pessoais, garantindo mais privacidade e controle aos cidadãos sobre suas informações.</p>
+
+            <h3>1.1 Objetivos da LGPD</h3>
+            <ul>
+                <li>Proteger os direitos fundamentais de liberdade e privacidade</li>
+                <li>Regular o tratamento de dados pessoais por empresas e governo</li>
+                <li>Garantir transparência no uso de dados</li>
+                <li>Promover a autodeterminação informativa</li>
+                <li>Estimular o desenvolvimento tecnológico responsável</li>
+            </ul>
+
+            <h2>2. Nosso Compromisso com a LGPD</h2>
+
+            <p>A Carreiro Consultoria adota as seguintes práticas para garantir conformidade com a LGPD:</p>
+
+            <h3>2.1 Princípios que Seguimos</h3>
+            <ul>
+                <li><strong>Finalidade:</strong> Coletamos dados apenas para propósitos específicos e legítimos</li>
+                <li><strong>Adequação:</strong> Tratamento compatível com as finalidades informadas</li>
+                <li><strong>Necessidade:</strong> Coleta limitada ao mínimo necessário</li>
+                <li><strong>Livre acesso:</strong> Garantia de consulta facilitada sobre seus dados</li>
+                <li><strong>Qualidade:</strong> Dados exatos, claros e atualizados</li>
+                <li><strong>Transparência:</strong> Informações claras e acessíveis sobre tratamento</li>
+                <li><strong>Segurança:</strong> Medidas técnicas e administrativas para proteção</li>
+                <li><strong>Prevenção:</strong> Ações proativas para evitar danos</li>
+                <li><strong>Não discriminação:</strong> Impossibilidade de tratamento discriminatório</li>
+                <li><strong>Responsabilização:</strong> Demonstração de conformidade</li>
+            </ul>
+
+            <h2>3. Seus Direitos como Titular de Dados</h2>
+
+            <p>A LGPD garante diversos direitos aos titulares de dados pessoais. Veja seus direitos quando usa o Carreiro Consultoria Lembretes:</p>
+
+            <div class="rights-grid">
+                <div class="right-card">
+                    <h4><i class="fas fa-info-circle"></i> Confirmação e Acesso</h4>
+                    <p>Confirmar se tratamos seus dados e obter acesso a eles.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-edit"></i> Correção</h4>
+                    <p>Corrigir dados incompletos, inexatos ou desatualizados.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-shield-alt"></i> Anonimização</h4>
+                    <p>Solicitar anonimização ou bloqueio de dados desnecessários.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-trash-alt"></i> Eliminação</h4>
+                    <p>Pedir exclusão de dados tratados com consentimento.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-download"></i> Portabilidade</h4>
+                    <p>Receber seus dados em formato estruturado e interoperável.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-share-alt"></i> Informação</h4>
+                    <p>Saber com quem compartilhamos seus dados.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-ban"></i> Revogação</h4>
+                    <p>Retirar consentimento a qualquer momento.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-hand-paper"></i> Oposição</h4>
+                    <p>Opor-se ao tratamento realizado sem consentimento.</p>
+                </div>
+
+                <div class="right-card">
+                    <h4><i class="fas fa-robot"></i> Revisão</h4>
+                    <p>Revisar decisões automatizadas (perfis, comportamento).</p>
+                </div>
+            </div>
+
+            <h2>4. Como Tratamos Seus Dados</h2>
+
+            <h3>4.1 Dados que Coletamos</h3>
+            <ul>
+                <li><strong>Dados de identificação:</strong> Número de telefone WhatsApp</li>
+                <li><strong>Dados de conteúdo:</strong> Mensagens de lembretes, datas, horários</li>
+                <li><strong>Dados de uso:</strong> Frequência de uso, comandos, preferências</li>
+                <li><strong>Dados técnicos:</strong> Logs, status de entrega, tipo de plano</li>
+            </ul>
+
+            <h3>4.2 Finalidades do Tratamento</h3>
+            <ul>
+                <li>Prestação do serviço de lembretes automatizados</li>
+                <li>Processamento de linguagem natural via IA</li>
+                <li>Transcrição de mensagens de áudio</li>
+                <li>Gestão de planos e limites de uso</li>
+                <li>Comunicação e suporte ao usuário</li>
+                <li>Melhorias técnicas e funcionais</li>
+                <li>Segurança e prevenção de fraudes</li>
+                <li>Cumprimento de obrigações legais</li>
+            </ul>
+
+            <h3>4.3 Bases Legais (Art. 7º e 11 da LGPD)</h3>
+            <p>Fundamentamos o tratamento de dados nas seguintes bases legais:</p>
+            <ul>
+                <li><strong>Execução de contrato:</strong> Necessário para prestar o serviço contratado</li>
+                <li><strong>Consentimento:</strong> Para funcionalidades opcionais (quando aplicável)</li>
+                <li><strong>Legítimo interesse:</strong> Melhorias do serviço, segurança, prevenção de fraudes</li>
+                <li><strong>Cumprimento de obrigação legal:</strong> Quando exigido por lei</li>
+            </ul>
+
+            <h2>5. Compartilhamento de Dados</h2>
+
+            <h3>5.1 Com Quem Compartilhamos</h3>
+            <p>Seus dados podem ser compartilhados com:</p>
+            <ul>
+                <li><strong>Operadores autorizados:</strong> Provedores de infraestrutura (Twilio, Supabase, Google)</li>
+                <li><strong>WhatsApp/Meta:</strong> Para envio de mensagens (cumprimento contratual)</li>
+                <li><strong>Autoridades:</strong> Quando exigido por lei ou ordem judicial</li>
+            </ul>
+
+            <h3>5.2 Transferência Internacional</h3>
+            <p>Alguns operadores estão localizados no exterior (EUA). Garantimos que:</p>
+            <ul>
+                <li>Transferências seguem regras da LGPD (Art. 33)</li>
+                <li>Países destinatários oferecem proteção adequada ou garantias contratuais</li>
+                <li>Dados são protegidos mesmo em jurisdições estrangeiras</li>
+            </ul>
+
+            <h2>6. Segurança e Proteção de Dados</h2>
+
+            <h3>6.1 Medidas Técnicas</h3>
+            <ul>
+                <li>Criptografia em trânsito (TLS/HTTPS)</li>
+                <li>Criptografia em repouso (banco de dados)</li>
+                <li>Controles de acesso e autenticação</li>
+                <li>Monitoramento de segurança contínuo</li>
+                <li>Backups regulares e recuperação de desastres</li>
+            </ul>
+
+            <h3>6.2 Medidas Organizacionais</h3>
+            <ul>
+                <li>Política de privacidade e segurança da informação</li>
+                <li>Treinamento de equipe</li>
+                <li>Contratos com operadores (garantias de proteção)</li>
+                <li>Plano de resposta a incidentes</li>
+            </ul>
+
+            <h3>6.3 Notificação de Incidentes</h3>
+            <p>Em caso de incidente de segurança que possa causar risco ou dano aos titulares:</p>
+            <ul>
+                <li>Notificaremos a ANPD em tempo razoável</li>
+                <li>Comunicaremos aos titulares afetados</li>
+                <li>Tomaremos medidas para mitigar danos</li>
+            </ul>
+
+            <h2>7. Retenção e Eliminação de Dados</h2>
+
+            <h3>7.1 Períodos de Retenção</h3>
+            <ul>
+                <li><strong>Dados de conta:</strong> Enquanto você usar o serviço</li>
+                <li><strong>Lembretes concluídos:</strong> Até 90 dias após execução</li>
+                <li><strong>Logs técnicos:</strong> Até 6 meses</li>
+                <li><strong>Dados de pagamento:</strong> Conforme exigências fiscais (5 anos)</li>
+            </ul>
+
+            <h3>7.2 Eliminação de Dados</h3>
+            <p>Quando não mais necessários:</p>
+            <ul>
+                <li>Dados são anonimizados ou eliminados</li>
+                <li>Exclusão segura e irreversível</li>
+                <li>Mantemos apenas o necessário por obrigação legal</li>
+            </ul>
+
+            <h2>8. Encarregado de Dados (DPO)</h2>
+
+            <p>Conforme Art. 41 da LGPD, nomeamos um Encarregado de Dados para atuar como canal de comunicação:</p>
+
+            <div class="contact-box">
+                <h3><i class="fas fa-user-shield"></i> Encarregado de Proteção de Dados</h3>
+                <p><strong>Responsável:</strong> Carreiro Consultoria</p>
+                <p><strong>E-mail:</strong> <a href="mailto:contato@lembrai.com.br">contato@lembrai.com.br</a></p>
+                <p><strong>WhatsApp:</strong> <a href="https://wa.me/12185204483">+1 218-520-4483</a></p>
+            </div>
+
+            <h2>9. Como Exercer Seus Direitos</h2>
+
+            <h3>9.1 Solicitações</h3>
+            <p>Para exercer qualquer direito previsto na LGPD:</p>
+            <ol>
+                <li>Entre em contato através dos canais acima</li>
+                <li>Identifique-se (para segurança)</li>
+                <li>Descreva seu pedido claramente</li>
+                <li>Aguarde nossa resposta em até 15 dias</li>
+            </ol>
+
+            <h3>9.2 Confirmação Gratuita</h3>
+            <p>A primeira solicitação de confirmação ou acesso aos dados é <strong>gratuita</strong>. Pedidos subsequentes em intervalo menor que 6 meses podem ter custo conforme LGPD.</p>
+
+            <h3>9.3 Prazo de Resposta</h3>
+            <p>Responderemos solicitações em até <strong>15 dias</strong>. Caso seja necessário mais tempo, explicaremos o motivo da prorrogação.</p>
+
+            <h2>10. Direitos dos Menores</h2>
+
+            <p>Nosso serviço requer idade mínima de 18 anos. Não coletamos intencionalmente dados de menores. Se identificarmos dados de menores, tomaremos medidas imediatas de eliminação.</p>
+
+            <h2>11. Autoridade Nacional de Proteção de Dados (ANPD)</h2>
+
+            <p>Você tem o direito de apresentar reclamação à ANPD se considerar que seus direitos foram violados:</p>
+
+            <div class="highlight-box">
+                <p><strong>ANPD - Autoridade Nacional de Proteção de Dados</strong></p>
+                <p><strong>Site:</strong> <a href="https://www.gov.br/anpd" target="_blank" style="color: var(--primary);">www.gov.br/anpd</a></p>
+                <p><strong>E-mail:</strong> atendimento@anpd.gov.br</p>
+                <p><strong>Canal de Denúncias:</strong> Disponível no site da ANPD</p>
+            </div>
+
+            <h2>12. Alterações nesta Página</h2>
+
+            <p>Podemos atualizar esta página sobre LGPD periodicamente. Mudanças significativas serão comunicadas através de:</p>
+            <ul>
+                <li>Notificação no site</li>
+                <li>E-mail (quando aplicável)</li>
+                <li>Mensagem via WhatsApp (usuários ativos)</li>
+            </ul>
+
+            <h2>13. Documentos Relacionados</h2>
+
+            <p>Para informações completas sobre tratamento de dados, consulte também:</p>
+            <ul>
+                <li><a href="/politica-de-privacidade.html" style="color: var(--primary);"><i class="fas fa-shield-alt"></i> Política de Privacidade</a></li>
+                <li><a href="/politica-de-cookies.html" style="color: var(--primary);"><i class="fas fa-cookie-bite"></i> Política de Cookies</a></li>
+                <li><a href="/termos-de-uso.html" style="color: var(--primary);"><i class="fas fa-file-contract"></i> Termos de Uso</a></li>
+            </ul>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #E5E7EB;">
+
+            <div class="highlight-box">
+                <p><strong>Transparência e Controle:</strong> A LGPD coloca você no controle de seus dados pessoais. Estamos aqui para garantir que seus direitos sejam respeitados. Entre em contato sempre que tiver dúvidas ou quiser exercer seus direitos.</p>
+            </div>
+
+            <div class="contact-box">
+                <h3><i class="fas fa-envelope"></i> Dúvidas sobre LGPD?</h3>
+                <p>Nossa equipe está pronta para ajudar.</p>
+                <p><strong>E-mail:</strong> <a href="mailto:contato@lembrai.com.br">contato@lembrai.com.br</a></p>
+                <p><strong>WhatsApp:</strong> <a href="https://wa.me/12185204483">+1 218-520-4483</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Carreiro Consultoria Lembretes. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
